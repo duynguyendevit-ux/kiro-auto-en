@@ -1627,11 +1627,10 @@ export async function autoRegisterAWS(
       
       const thirdContinueSelector = 'button[data-testid="test-primary-button"]'
       if (!await waitAndClickWithRetry(page, thirdContinueSelector, log, 'Attempt三个继续按钮（Confirm）')) {
-        throw new Error('Click failed')
-      }
-      
-      await page.waitForTimeout(5000)
+              throw new Error('Click failed')
     }
+    
+    await page.waitForTimeout(5000)
     
     log('\nStep5: Waiting for授权请求页面（Authorization requested）...')
     const authConfirmSelectors = [
