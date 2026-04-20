@@ -1345,20 +1345,56 @@ export async function autoRegisterAWS(
     if (userCode) {
       log(`User Code: ${userCode}`)
     }
+    
+    // Detect URL format
+    const isWorkflowFormat = registerUrl.includes('workflowID') || registerUrl.includes('profile.aws.amazon.com')
+    log(`URL format: ${isWorkflowFormat ? 'Workflow (new)' : 'Device code (old)'}`)
+    
     await page.goto(registerUrl, { waitUntil: 'networkidle', timeout: 60000 })
     log(`✓ Page loaded${incognitoMode ? '（Incognito mode）' : ''}${useFingerprint ? '（fingerprint applied）' : ''}`)
     
     await simulatePreRegistrationBehavior(page, log)
     
-    const emailInputSelector = 'input[placeholder="username@example.com"]'
-    if (!await waitAndFill(page, emailInputSelector, email, log, 'Email input field')) {
+    // Try multiple email input selectors
+    const emailInputSelectors = [
+      'input[placeholder="username@example.com"]',
+      'input[type="email"]',
+      'input[name="email"]',
+      'input[autocomplete="email"]'
+    ]
+    
+    let emailFilled = false
+    for (const selector of emailInputSelectors) {
+      if (await waitAndFill(page, selector, email, log, 'Email input field')) {
+        emailFilled = true
+        break
+      }
+    }
+    
+    if (!emailFilled) {
       throw new Error('Not foundEmail input field')
     }
     
     await page.waitForTimeout(1000)
     
-    const firstContinueSelector = 'button[data-testid="test-primary-button"]'
-    if (!await waitAndClickWithRetry(page, firstContinueSelector, log, 'Attempt一个继续按钮')) {
+    // Try multiple continue button selectors
+    const firstContinueSelectors = [
+      'button[data-testid="test-primary-button"]',
+      'button[data-testid="signup-next-button"]',
+      'button:has-text("Continue")',
+      'button:has-text("Next")',
+      'button[type="submit"]'
+    ]
+    
+    let continueClicked = false
+    for (const selector of firstContinueSelectors) {
+      if (await waitAndClickWithRetry(page, selector, log, 'First continue button')) {
+        continueClicked = true
+        break
+      }
+    }
+    
+    if (!continueClicked) {
       throw new Error('Click failed')
     }
     
