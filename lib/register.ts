@@ -1346,11 +1346,15 @@ export async function autoRegisterAWS(
       log(`User Code: ${userCode}`)
     }
     
-    // Detect URL format
-    const isWorkflowFormat = registerUrl.includes('workflowID') || registerUrl.includes('profile.aws.amazon.com')
+    await page.goto(registerUrl, { waitUntil: 'networkidle', timeout: 60000 })
+    
+    // Wait for potential redirect to workflow format
+    await page.waitForTimeout(2000)
+    const currentUrl = page.url()
+    const isWorkflowFormat = currentUrl.includes('workflowID') || currentUrl.includes('profile.aws.amazon.com')
+    log(`Current URL: ${currentUrl}`)
     log(`URL format: ${isWorkflowFormat ? 'Workflow (new)' : 'Device code (old)'}`)
     
-    await page.goto(registerUrl, { waitUntil: 'networkidle', timeout: 60000 })
     log(`✓ Page loaded${incognitoMode ? '（Incognito mode）' : ''}${useFingerprint ? '（fingerprint applied）' : ''}`)
     
     await simulatePreRegistrationBehavior(page, log)
