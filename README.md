@@ -87,12 +87,12 @@ Interactive menu features:
 ### Read Email Verification Code
 
 ```bash
-# Read verification code from temporary email
-npm run read-mail -- <email> <token> [timeout]
+# Read verification code from temporary email (no token needed)
+npm run read-mail -- <email> [timeout]
 
 # Examples:
-npm run read-mail -- user@tempmail.lol abc123token
-npm run read-mail -- user@79g.cloudvxz.com abc123token 120
+npm run read-mail -- benoite663908@79g.cloudvxz.com
+npm run read-mail -- user@tempmail.lol 120
 ```
 
 This will:
@@ -100,6 +100,8 @@ This will:
 - Filter emails from AWS senders
 - Extract 6-digit verification codes
 - Return the code when found
+
+**Note:** Works with tempmail.lol domains (no authentication required)
 
 ## Command Line Arguments
 
