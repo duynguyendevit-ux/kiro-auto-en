@@ -9,6 +9,7 @@
   "scripts": {
     "switch": "tsx scripts/switch.ts",
     "register": "tsx scripts/register.ts",
+    "read-mail": "tsx scripts/read-mail.ts",
     "install-browser": "npx playwright install chromium"
   },
   "dependencies": {

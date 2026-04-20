@@ -84,6 +84,23 @@ Interactive menu features:
 - Reset machine ID
 - View status
 
+### Read Email Verification Code
+
+```bash
+# Read verification code from temporary email
+npm run read-mail -- <email> <token> [timeout]
+
+# Examples:
+npm run read-mail -- user@tempmail.lol abc123token
+npm run read-mail -- user@79g.cloudvxz.com abc123token 120
+```
+
+This will:
+- Poll the email inbox every 3 seconds
+- Filter emails from AWS senders
+- Extract 6-digit verification codes
+- Return the code when found
+
 ## Command Line Arguments
 
 | Argument | Short | Default | Description |
