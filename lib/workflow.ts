@@ -128,8 +128,10 @@ export async function registerWorkflow(options: {
     await page.waitForTimeout(2000)
     
     const emailSelectors = [
+      'input[placeholder="username@example.com"]',
       'input[type="email"]',
       'input[name="email"]',
+      'input[name="loginfmt"]',
       'input[autocomplete="email"]',
       'input[placeholder*="email"]',
       'input[id*="email"]'
