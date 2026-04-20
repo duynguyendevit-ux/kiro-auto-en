@@ -116,25 +116,30 @@ export async function registerWorkflow(options: {
     await page.goto(registerUrl, { waitUntil: 'networkidle', timeout: 60000 })
     
     // Wait for potential redirect
-    await page.waitForTimeout(2000)
+    await page.waitForTimeout(3000)
     const currentUrl = page.url()
     log(`Current URL: ${currentUrl}`)
     log(`✓ Page loaded`)
     
     // Step 3: Fill email
     log('\nStep 3: Filling email...')
+    
+    // Wait for page to be fully loaded
+    await page.waitForTimeout(2000)
+    
     const emailSelectors = [
       'input[type="email"]',
       'input[name="email"]',
       'input[autocomplete="email"]',
-      'input[placeholder*="email"]'
+      'input[placeholder*="email"]',
+      'input[id*="email"]'
     ]
     
     let emailFilled = false
     for (const selector of emailSelectors) {
       try {
         const input = page.locator(selector).first()
-        if (await input.isVisible({ timeout: 2000 })) {
+        if (await input.isVisible({ timeout: 5000 })) {
           await typeText(page, selector, email)
           emailFilled = true
           log(`✓ Email filled: ${email}`)
