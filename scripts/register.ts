@@ -160,22 +160,22 @@ async function runRegistration(opts: CliOptions): Promise<{ ok: number; fail: nu
   }
 
   const funnyMessages = [
-    '奥里给！冲！',
-    '干就完了！',
-    '怕什么！干！',
-    '冲冲冲！',
-    '不要怂！就是干！',
-    '奥里给！',
-    '干就完事了！',
-    '冲啊兄弟们！',
-    '不要怕！上！',
-    '奥里给！冲冲冲！'
+    'Let's go!',
+    'Just do it!',
+    'Don't be afraid!',
+    'Go go go!',
+    'Don't hesitate!',
+    'Let's go!',
+    'Get it done!',
+    'Charge!',
+    'Go for it!',
+    'Let's go!Go go go!'
   ]
 
   const getRandomFunny = () => funnyMessages[Math.floor(Math.random() * funnyMessages.length)]
 
-  logInfo(`🔥 奥里给！准备造 ${opts.count} 个账号！并发 ${opts.concurrency} 个！`)
-  logInfo(`   (AWS: 你们礼貌吗？？？)\n`)
+  logInfo(`🔥 Let's go!Preparing to create ${opts.count} accounts！concurrent ${opts.concurrency} 个！`)
+  logInfo(`   (AWS: Are you serious???)\n`)
 
   const templateOutAbs = resolve(opts.templateOutputPath)
   
@@ -206,7 +206,7 @@ async function runRegistration(opts: CliOptions): Promise<{ ok: number; fail: nu
     }
 
     try {
-      // 设置代理环境变量（让 fetch 请求也走代理）
+      // Set proxy环境变量（让 fetch 请求也Using proxy）
       if (opts.proxyUrl) {
         process.env.HTTP_PROXY = opts.proxyUrl
         process.env.HTTPS_PROXY = opts.proxyUrl
@@ -214,13 +214,13 @@ async function runRegistration(opts: CliOptions): Promise<{ ok: number; fail: nu
         process.env.https_proxy = opts.proxyUrl
       }
       
-      log('正在向 AWS 伸手要设备码...')
+      log('Requesting device code from AWS...')
       const start = await startBuilderIdDeviceLogin(opts.region)
       if (!start.success) {
         throw new Error(start.error)
       }
 
-      log(`拿到 userCode: ${start.userCode}，浏览器启动！自动化走起！`)
+      log(`Got userCode: ${start.userCode}，Browser launched! Automation started!`)
 
       const result = await registerAwsBuilderIdTempMail({
         log,
@@ -239,7 +239,7 @@ async function runRegistration(opts: CliOptions): Promise<{ ok: number; fail: nu
         const endAt = start.expiresAt
         let intervalMs = Math.max(1000, start.interval * 1000)
 
-        log('等 AWS 确认中...（它可能懵了）')
+        log('Waiting for AWS confirmation...（It might be confused）')
         while (Date.now() < endAt) {
           const poll = await pollBuilderIdDeviceAuth({
             region: opts.region,
@@ -261,7 +261,7 @@ async function runRegistration(opts: CliOptions): Promise<{ ok: number; fail: nu
 
           if (poll.status === 'slow_down') {
             intervalMs += 5000
-            log('AWS 说：慢点慢点！你太快了！')
+            log('AWS says: Slow down! You are too fast!')
           }
 
           await new Promise((r) => setTimeout(r, intervalMs))
@@ -281,9 +281,9 @@ async function runRegistration(opts: CliOptions): Promise<{ ok: number; fail: nu
 
       completed++
       if (result.success) {
-        log(`✅ 拿下！邮箱: ${result.email}！AWS 又损失一员大将！`)
+        log(`✅ Success! Email: ${result.email}！AWS lost another one！`)
       } else {
-        log(`❌ 翻车了: ${result.error}...AWS 这波防住了`)
+        log(`❌ Failed: ${result.error}...AWS blocked this one`)
       }
     } catch (e) {
       completed++
@@ -291,7 +291,7 @@ async function runRegistration(opts: CliOptions): Promise<{ ok: number; fail: nu
         success: false,
         error: e instanceof Error ? e.message : String(e)
       }
-      log(`💥 炸了: ${allRecords[idx]!.error}！但是不要慌！`)
+      log(`💥 Crashed: ${allRecords[idx]!.error}！But dont panic！`)
     }
   })
 
@@ -304,18 +304,18 @@ async function runRegistration(opts: CliOptions): Promise<{ ok: number; fail: nu
 
   print('')
   if (ok > 0 && fail === 0) {
-    log('green', `🎉 奥里给！${ok} 个账号全部拿下！耗时 ${elapsedSec} 秒！`)
-    log('cyan', `   AWS: "我太难了..."`)
+    log('green', `🎉 Let's go!${ok} accountsAll succeeded！Time elapsed ${elapsedSec} seconds！`)
+    log('cyan', `   AWS: "This is too hard..."`)
   } else if (ok > 0) {
-    log('yellow', `😅 还行！拿下 ${ok} 个，翻车 ${fail} 个，耗时 ${elapsedSec} 秒`)
-    log('dim', `   (翻车的那些...下次再战！)`)
+    log('yellow', `😅 Not bad! Got ${ok} 个，failed ${fail} 个，Time elapsed ${elapsedSec} seconds`)
+    log('dim', `   (failed的那些...Try again next time！)`)
   } else {
-    log('red', `💀 全军覆没！一个都没成！耗时 ${elapsedSec} 秒`)
-    log('dim', `   (是不是网不行？还是 AWS 开挂了？)`)
+    log('red', `💀 Total failure! None succeeded！Time elapsed ${elapsedSec} seconds`)
+    log('dim', `   (Is it the network? Or did AWS cheat?)`)
   }
 
   await writeFile(outPathAbs, JSON.stringify(allRecords.filter(Boolean), null, 2), { encoding: 'utf-8' })
-  log('green', `\n📁 结果文件已保存: ${outPathAbs}`)
+  log('green', `\n📁 Results saved to: ${outPathAbs}`)
 
   if (opts.emitBuilderIdTemplate && successRecords.length > 0) {
     const templateDirAbs = resolve(opts.templateOutputPath, '..')
@@ -328,8 +328,8 @@ async function runRegistration(opts: CliOptions): Promise<{ ok: number; fail: nu
       clientSecret: r.clientSecret
     }))
     await writeFile(templateOutAbs, JSON.stringify(templateData, null, 2), { encoding: 'utf-8' })
-    log('green', `📁 模板文件已保存: ${templateOutAbs}`)
-    log('dim', `   (拿去切换工具用，别浪费了！)`)
+    log('green', `📁 Template saved to: ${templateOutAbs}`)
+    log('dim', `   (Use it with the switcher tool, dont waste it！)`)
   }
 
   return { ok, fail }
@@ -358,8 +358,8 @@ async function interactiveMode(initialOptions: Partial<CliOptions>): Promise<voi
   const showBanner = () => {
     print('')
     log('bright', '╔══════════════════════════════════════════════╗')
-    log('bright', '║  🤖 AWS 账号批量生产机 v1.0                  ║')
-    log('bright', '║     (白嫖 AWS，人人有责)                     ║')
+    log('bright', '║  🤖 AWS Account Batch Generator v1.0                  ║')
+    log('bright', '║     (Free AWS for everyone)                     ║')
     log('bright', '╚══════════════════════════════════════════════╝')
   }
 
@@ -367,31 +367,31 @@ async function interactiveMode(initialOptions: Partial<CliOptions>): Promise<voi
     showBanner()
 
     print('')
-    log('dim', '┌─ ⚙️ 当前配置 ───────────────────────────────')
-    log('dim', `│ 要造几个: ${currentOptions.count} 个`)
-    log('dim', `│ 同时开几个: ${currentOptions.concurrency} 个`)
-    log('dim', `│ 每个隔多久: ${currentOptions.delayMs}ms`)
-    log('dim', `│ 隐身模式: ${currentOptions.incognitoMode ? '✅ 开着呢' : '❌ 关了'}`)
-    log('dim', `│ 指纹伪装: ${currentOptions.useFingerprint ? '✅ 伪装中' : '❌ 原始状态'}`)
-    log('dim', `│ 生成模板: ${currentOptions.emitBuilderIdTemplate ? '✅ 会生成' : '❌ 不生成'}`)
+    log('dim', '┌─ ⚙️ Current Configuration ───────────────────────────────')
+    log('dim', `│ How many to create: ${currentOptions.count} 个`)
+    log('dim', `│ Concurrent: ${currentOptions.concurrency} 个`)
+    log('dim', `│ Delay between each: ${currentOptions.delayMs}ms`)
+    log('dim', `│ Incognito mode: ${currentOptions.incognitoMode ? '✅ Enabled' : '❌ Disabled'}`)
+    log('dim', `│ Fingerprint spoofing: ${currentOptions.useFingerprint ? '✅ Spoofing' : '❌ Original'}`)
+    log('dim', `│ Generate template: ${currentOptions.emitBuilderIdTemplate ? '✅ Will generate' : '❌ Wont generate'}`)
     if (currentOptions.proxyUrl) {
-      log('dim', `│ 走代理: ${currentOptions.proxyUrl}`)
+      log('dim', `│ Using proxy: ${currentOptions.proxyUrl}`)
     } else {
-      log('dim', `│ 走代理: 无 (直连，AWS 知道你是谁)`)
+      log('dim', `│ Using proxy: None (direct connection, AWS knows who you are)`)
     }
     log('dim', '└─────────────────────────────────────────────')
     print('')
-    log('cyan', '┌─ 🎮 操作菜单 ───────────────────────────────')
-    print(COLORS.cyan + '│' + COLORS.reset + '  [1] 🚀 开始造号！')
-    print(COLORS.cyan + '│' + COLORS.reset + '  [2] 改一下要造几个')
-    print(COLORS.cyan + '│' + COLORS.reset + '  [3] 改一下并发数 (别太贪心)')
-    print(COLORS.cyan + '│' + COLORS.reset + '  [4] 改一下间隔时间')
-    print(COLORS.cyan + '│' + COLORS.reset + '  [5] 切换隐身模式')
-    print(COLORS.cyan + '│' + COLORS.reset + '  [6] 切换指纹伪装')
-    print(COLORS.cyan + '│' + COLORS.reset + '  [7] 切换是否生成模板')
-    print(COLORS.cyan + '│' + COLORS.reset + '  [8] 设置代理 (不想被追踪就设一个)')
-    print(COLORS.cyan + '│' + COLORS.reset + '  [9] 看看历史战绩')
-    print(COLORS.cyan + '│' + COLORS.reset + '  [0] 退出 (不玩了)')
+    log('cyan', '┌─ 🎮 Operation Menu ───────────────────────────────')
+    print(COLORS.cyan + '│' + COLORS.reset + '  [1] 🚀 Start Registration！')
+    print(COLORS.cyan + '│' + COLORS.reset + '  [2] 改一下How many to create')
+    print(COLORS.cyan + '│' + COLORS.reset + '  [3] 改一下concurrent数 (Dont be too greedy)')
+    print(COLORS.cyan + '│' + COLORS.reset + '  [4] Change interval time')
+    print(COLORS.cyan + '│' + COLORS.reset + '  [5] 切换Incognito mode')
+    print(COLORS.cyan + '│' + COLORS.reset + '  [6] 切换Fingerprint spoofing')
+    print(COLORS.cyan + '│' + COLORS.reset + '  [7] 切换是否Generate template')
+    print(COLORS.cyan + '│' + COLORS.reset + '  [8] Set proxy (Set one if you dont want to be tracked)')
+    print(COLORS.cyan + '│' + COLORS.reset + '  [9] View history')
+    print(COLORS.cyan + '│' + COLORS.reset + '  [0] Exit (Quit)')
     log('cyan', '└─────────────────────────────────────────────')
     print('')
   }
@@ -401,20 +401,20 @@ async function interactiveMode(initialOptions: Partial<CliOptions>): Promise<voi
     const templatePath = resolve(currentOptions.templateOutputPath)
 
     print('')
-    log('cyan', '═══ 📊 历史战绩 ═══')
+    log('cyan', '═══ 📊 History ═══')
 
     if (await fileExists(templatePath)) {
       try {
         const raw = await readFile(templatePath, 'utf-8')
         const items = JSON.parse(raw)
-        log('green', `✅ 模板文件: ${templatePath}`)
-        log('dim', `   已有 ${Array.isArray(items) ? items.length : 0} 个账号躺在这里`)
+        log('green', `✅ Template file: ${templatePath}`)
+        log('dim', `   Already have ${Array.isArray(items) ? items.length : 0} accounts躺在这里`)
       } catch {
-        log('yellow', `⚠️ 模板文件读不了: ${templatePath}`)
+        log('yellow', `⚠️ Template file读不了: ${templatePath}`)
       }
     } else {
-      log('yellow', `⚠️ 模板文件不存在: ${templatePath}`)
-      log('dim', `   (还没注册过账号吧？)`)
+      log('yellow', `⚠️ Template file不存在: ${templatePath}`)
+      log('dim', `   (Havent registered any accounts yet?)`)
     }
 
     if (await fileExists(resultPath)) {
@@ -423,64 +423,64 @@ async function interactiveMode(initialOptions: Partial<CliOptions>): Promise<voi
         const records = JSON.parse(raw)
         const success = records.filter((r: any) => r.success).length
         const failed = records.filter((r: any) => !r.success).length
-        log('dim', `📝 结果文件: ${resultPath}`)
-        log('dim', `   总共 ${records.length} 条记录 (成功: ${success}, 失败: ${failed})`)
+        log('dim', `📝 Results file: ${resultPath}`)
+        log('dim', `   Total ${records.length} records (success: ${success}, failed: ${failed})`)
         if (failed > success) {
-          log('yellow', `   (失败率有点高啊，是不是 AWS 发现你了？)`)
+          log('yellow', `   (failed率有点高啊，是不是 AWS 发现你了？)`)
         }
       } catch {
-        log('yellow', `⚠️ 结果文件读不了: ${resultPath}`)
+        log('yellow', `⚠️ Results file读不了: ${resultPath}`)
       }
     } else {
-      log('yellow', `⚠️ 结果文件不存在: ${resultPath}`)
+      log('yellow', `⚠️ Results file不存在: ${resultPath}`)
     }
   }
 
   await showMenu()
 
   while (running) {
-    const input = await question(COLORS.green + '选个数字 [0-9] > ' + COLORS.reset)
+    const input = await question(COLORS.green + 'Select a number [0-9] > ' + COLORS.reset)
     const cmd = input.trim()
 
     switch (cmd) {
       case '1': {
         print('')
-        log('cyan', '🔥 开始造号！AWS 准备好接招了吗？')
+        log('cyan', '🔥 Start Registration！AWS 准备好接招了吗？')
         log('dim', '───────────────────────────────────────')
         const result = await runRegistration(currentOptions)
         log('dim', '───────────────────────────────────────')
         if (result.ok > 0) {
-          log('magenta', `\n🎉 收工！成功造了 ${result.ok} 个账号！`)
+          log('magenta', `\n🎉 Done! Successfully created ${result.ok} accounts！`)
         }
         break
       }
 
       case '2': {
-        const answer = await questionWithDefault('要造几个账号', String(currentOptions.count))
+        const answer = await questionWithDefault('要造几accounts', String(currentOptions.count))
         const val = toInt(answer, currentOptions.count)
         if (val < 1) {
-          log('red', '至少造 1 个吧，你输入的是啥？')
+          log('red', 'At least create 1, what did you enter?')
         } else if (val > 50) {
           currentOptions.count = val
-          log('yellow', `⚠️ 设置为 ${val} 个...你这是要搞大事啊，小心被封`)
+          log('yellow', `⚠️ Set to ${val} 个...Thats a lot, be careful of getting banned`)
         } else {
           currentOptions.count = val
-          log('green', `✓ 好的，准备造 ${val} 个账号`)
+          log('green', `✓ 好的，Preparing to create ${val} accounts`)
         }
         break
       }
 
       case '3': {
-        const answer = await questionWithDefault('并发数', String(currentOptions.concurrency))
+        const answer = await questionWithDefault('concurrent数', String(currentOptions.concurrency))
         const val = toInt(answer, currentOptions.concurrency)
         if (val < 1) {
-          log('red', '并发数至少 1 个，别闹')
+          log('red', 'concurrent数至少 1 个，别闹')
         } else if (val > 5) {
           currentOptions.concurrency = val
-          log('yellow', `⚠️ 并发 ${val} 个...你的电脑扛得住吗？`)
+          log('yellow', `⚠️ concurrent ${val} 个...Can your computer handle it?`)
         } else {
           currentOptions.concurrency = val
-          log('green', `✓ 并发数设为 ${val}`)
+          log('green', `✓ concurrent数设为 ${val}`)
         }
         break
       }
@@ -489,13 +489,13 @@ async function interactiveMode(initialOptions: Partial<CliOptions>): Promise<voi
         const answer = await questionWithDefault('任务间隔(ms)', String(currentOptions.delayMs))
         const val = toInt(answer, currentOptions.delayMs)
         if (val < 0) {
-          log('red', '时间不能倒流，输入正数')
+          log('red', 'Time cannot go backwards, enter a positive number')
         } else {
           currentOptions.delayMs = val
           if (val === 0) {
-            log('green', `✓ 不设间隔，全速前进！(AWS: 救命)`)
+            log('green', `✓ No interval, full speed! (AWS: Help!)`)
           } else {
-            log('green', `✓ 间隔设为 ${val}ms，稳一点好`)
+            log('green', `✓ Interval set to ${val}ms，Better to be stable`)
           }
         }
         break
@@ -504,9 +504,9 @@ async function interactiveMode(initialOptions: Partial<CliOptions>): Promise<voi
       case '5': {
         currentOptions.incognitoMode = !currentOptions.incognitoMode
         if (currentOptions.incognitoMode) {
-          log('green', '✓ 隐身模式已开启 (浏览器不留痕迹)')
+          log('green', '✓ Incognito mode已开启 (Browser leaves no traces)')
         } else {
-          log('yellow', '⚠️ 隐身模式已关闭 (你确定？会留痕迹的)')
+          log('yellow', '⚠️ Incognito mode已关闭 (Are you sure? It will leave traces)')
         }
         break
       }
@@ -514,9 +514,9 @@ async function interactiveMode(initialOptions: Partial<CliOptions>): Promise<voi
       case '6': {
         currentOptions.useFingerprint = !currentOptions.useFingerprint
         if (currentOptions.useFingerprint) {
-          log('green', '✓ 指纹伪装已开启 (每个浏览器看起来都不一样)')
+          log('green', '✓ Fingerprint spoofing已开启 (Each browser looks different)')
         } else {
-          log('yellow', '⚠️ 指纹伪装已关闭 (AWS 可能会认出你)')
+          log('yellow', '⚠️ Fingerprint spoofing已关闭 (AWS might recognize you)')
         }
         break
       }
@@ -524,23 +524,23 @@ async function interactiveMode(initialOptions: Partial<CliOptions>): Promise<voi
       case '7': {
         currentOptions.emitBuilderIdTemplate = !currentOptions.emitBuilderIdTemplate
         if (currentOptions.emitBuilderIdTemplate) {
-          log('green', '✓ 会生成模板文件 (方便切换工具使用)')
+          log('green', '✓ 会Generate template文件 (Convenient for switcher tool)')
         } else {
-          log('yellow', '⚠️ 不生成模板 (注册了也白注册)')
+          log('yellow', '⚠️ 不Generate template (Registration would be wasted)')
         }
         break
       }
 
       case '8': {
         const current = currentOptions.proxyUrl || '无'
-        const answer = await question(`代理地址 (留空清除) [当前: ${current}]: `)
+        const answer = await question(`Proxy address (Leave empty to clear) [Current: ${current}]: `)
         if (answer.trim() === '') {
           currentOptions.proxyUrl = undefined
-          log('green', '✓ 代理已清除 (直连 AWS)')
+          log('green', '✓ Proxy cleared (Direct connection to AWS)')
         } else {
           currentOptions.proxyUrl = answer.trim()
-          log('green', `✓ 代理设为: ${answer.trim()}`)
-          log('dim', '  (希望你的代理靠谱)')
+          log('green', `✓ Proxy set to: ${answer.trim()}`)
+          log('dim', '  (Hope your proxy is reliable)')
         }
         break
       }
@@ -556,11 +556,11 @@ async function interactiveMode(initialOptions: Partial<CliOptions>): Promise<voi
       case 'quit':
         running = false
         print('')
-        log('green', '👋 拜拜！记得用切换工具把账号用起来~')
+        log('green', '👋 Bye! Remember to use the switcher tool~')
         break
 
       default:
-        log('yellow', `输入 "${input}" 是啥意思？请输入 0-9`)
+        log('yellow', `Input "${input}" 是啥意思？请Input 0-9`)
         break
     }
 
@@ -588,6 +588,6 @@ async function main() {
 }
 
 main().catch((e) => {
-  process.stderr.write(`💥 出大事了: ${e instanceof Error ? e.stack ?? e.message : String(e)}\n`)
+  process.stderr.write(`💥 Something went wrong: ${e instanceof Error ? e.stack ?? e.message : String(e)}\n`)
   process.exitCode = 1
 })

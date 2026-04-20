@@ -111,7 +111,7 @@ async function simulatePageScroll(page: Page): Promise<void> {
 }
 
 async function simulatePreRegistrationBehavior(page: Page, log: LogCallback): Promise<void> {
-  log('[反检测] 模拟用户预热行为...')
+  log('[Anti-detection] Simulating user warm-up behavior...')
   
   await randomDelay(500, 1500)
   
@@ -130,7 +130,7 @@ async function simulatePreRegistrationBehavior(page: Page, log: LogCallback): Pr
     }
   }
   
-  log('[反检测] ✓ 预热行为完成')
+  log('[Anti-detection] ✓ Warm-up behavior completed')
 }
 
 function htmlToText(html: string): string {
@@ -194,7 +194,7 @@ export async function getOutlookVerificationCode(
   log: LogCallback,
   timeout: number = 120
 ): Promise<string | null> {
-  log('========== 开始获取邮箱验证码 ==========')
+  log('========== Starting to get email verification code ==========')
   log(`client_id: ${clientId}`)
   log(`refresh_token: ${refreshToken.substring(0, 30)}...`)
   
@@ -204,7 +204,7 @@ export async function getOutlookVerificationCode(
   
   while (Date.now() - startTime < timeout * 1000) {
     try {
-      log('刷新 access_token...')
+      log('Refreshing access_token...')
       let accessToken: string | null = null
       
       const tokenAttempts = [
@@ -231,7 +231,7 @@ export async function getOutlookVerificationCode(
           if (tokenResponse.ok) {
             const tokenResult = await tokenResponse.json() as { access_token: string }
             accessToken = tokenResult.access_token
-            log('✓ 成功获取 access_token')
+            log('✓ Successfully obtained access_token')
             break
           }
         } catch {
@@ -240,11 +240,11 @@ export async function getOutlookVerificationCode(
       }
       
       if (!accessToken) {
-        log('✗ token 刷新失败')
+        log('✗ Token refresh failed')
         return null
       }
       
-      log('获取邮件列表...')
+      log('Getting email list...')
       const graphParams = new URLSearchParams({
         '$top': '50',
         '$orderby': 'receivedDateTime desc',
@@ -259,7 +259,7 @@ export async function getOutlookVerificationCode(
       })
       
       if (!mailResponse.ok) {
-        log(`获取邮件失败: ${mailResponse.status}`)
+        log(`Failed to get emails: ${mailResponse.status}`)
         await new Promise(r => setTimeout(r, checkInterval))
         continue
       }
@@ -275,7 +275,7 @@ export async function getOutlookVerificationCode(
         }>
       }
       
-      log(`获取到 ${mailData.value?.length || 0} 封邮件`)
+      log(`Got ${mailData.value?.length || 0} emails`)
       
       for (const mail of mailData.value || []) {
         const fromEmail = mail.from?.emailAddress?.address?.toLowerCase() || ''
@@ -284,9 +284,9 @@ export async function getOutlookVerificationCode(
         if (isAwsSender && !checkedIds.has(mail.id)) {
           checkedIds.add(mail.id)
           
-          log(`\n=== 检查 AWS 邮件 ===`)
-          log(`  发件人: ${fromEmail}`)
-          log(`  主题: ${mail.subject?.substring(0, 50)}`)
+          log(`\n=== Checking AWS email ===`)
+          log(`  Sender: ${fromEmail}`)
+          log(`  Subject: ${mail.subject?.substring(0, 50)}`)
           
           let code: string | null = null
           const bodyText = htmlToText(mail.body?.content || '')
@@ -301,22 +301,22 @@ export async function getOutlookVerificationCode(
           }
           
           if (code) {
-            log(`\n========== 找到验证码: ${code} ==========`)
+            log(`\n========== Found verification code: ${code} ==========`)
             return code
           }
         }
       }
       
-      log(`未找到验证码，${checkInterval / 1000}秒后重试...`)
+      log(`未Found verification code，${checkInterval / 1000}seconds before retry...`)
       await new Promise(r => setTimeout(r, checkInterval))
       
     } catch (error) {
-      log(`获取验证码出错: ${error}`)
+      log(`Error getting verification code: ${error}`)
       await new Promise(r => setTimeout(r, checkInterval))
     }
   }
   
-  log('获取验证码超时')
+  log('Verification code timeout')
   return null
 }
 
@@ -367,7 +367,7 @@ export async function createTempMail(
   ]
   
   for (const service of services) {
-    log(`========== 尝试从 ${service.name} 申请临时邮箱（尝试多个域名）==========`)
+    log(`========== Trying from ${service.name} to get temporary email (trying multiple domains)==========`)
     const startTime = Date.now()
     let attemptCount = 0
     const usedDomains = new Set<string>()
@@ -378,7 +378,7 @@ export async function createTempMail(
         
         if (service.name === '215.im (YYDS Mail)') {
           if (!yydsMailApiKey) {
-            log('  ⚠ 未设置 YYDS_MAIL_API_KEY（或 MALIAPI_215_API_KEY），跳过 215.im 服务')
+            log('  ⚠ Not set YYDS_MAIL_API_KEY（或 MALIAPI_215_API_KEY），Skipping 215.im service')
             break
           }
           
@@ -388,7 +388,7 @@ export async function createTempMail(
             domain: '0m0.abrdns.com'
           }
           
-          log(`  尝试创建邮箱: ${randomPrefix}@0m0.abrdns.com (使用 API Key)`)
+          log(`  Trying to create email: ${randomPrefix}@0m0.abrdns.com (using API Key)`)
           
           const resp = await fetch(service.createUrl, {
             method: 'POST',
@@ -408,15 +408,15 @@ export async function createTempMail(
               usedDomains.add(domain)
               
               const password = Math.random().toString(36).slice(-8) + 'A1!'
-              log(`✓ 成功获取临时邮箱: ${result.data.address} (域名: ${domain})`)
+              log(`✓ Successfully obtained temporary email: ${result.data.address} (domain: ${domain})`)
               log(`  Token: ${result.data.token.substring(0, 20)}...`)
               return { email: result.data.address, token: result.data.token, password }
             } else {
-              log(`  API 返回格式错误: ${JSON.stringify(result)}`)
+              log(`  API returned wrong format: ${JSON.stringify(result)}`)
             }
           } else {
             const errorText = await resp.text()
-            log(`  第 ${attemptCount} 次请求失败: ${resp.status} - ${errorText}`)
+            log(`  Attempt ${attemptCount} request failed: ${resp.status} - ${errorText}`)
           }
         } else if (service.name === 'tempmail.lol') {
           const resp = await fetch(service.createUrl, {
@@ -433,12 +433,12 @@ export async function createTempMail(
               usedDomains.add(domain)
               
               const password = Math.random().toString(36).slice(-8) + 'A1!'
-              log(`✓ 成功获取临时邮箱: ${data.address} (域名: ${domain}, 第 ${attemptCount} 次尝试)`)
-              log(`  已尝试的域名: ${Array.from(usedDomains).join(', ')}`)
+              log(`✓ Successfully obtained temporary email: ${data.address} (domain: ${domain}, Attempt ${attemptCount} attempt)`)
+              log(`  已尝试的domain: ${Array.from(usedDomains).join(', ')}`)
               return { email: data.address, token: data.token, password }
             }
           } else {
-            log(`  第 ${attemptCount} 次请求失败: ${resp.status}`)
+            log(`  Attempt ${attemptCount} request failed: ${resp.status}`)
           }
         } else if (service.name === '1secmail.com') {
           const resp = await fetch(service.createUrl, {
@@ -456,7 +456,7 @@ export async function createTempMail(
               usedDomains.add(domain)
               
               const password = Math.random().toString(36).slice(-8) + 'A1!'
-              log(`✓ 成功获取临时邮箱: ${email} (域名: ${domain}, 第 ${attemptCount} 次尝试)`)
+              log(`✓ Successfully obtained temporary email: ${email} (domain: ${domain}, Attempt ${attemptCount} attempt)`)
               return { email, token: email, password }
             }
           }
@@ -477,7 +477,7 @@ export async function createTempMail(
               usedDomains.add(domain)
               
               const password = Math.random().toString(36).slice(-8) + 'A1!'
-              log(`✓ 成功获取临时邮箱: ${data.email} (域名: ${domain}, 第 ${attemptCount} 次尝试)`)
+              log(`✓ Successfully obtained temporary email: ${data.email} (domain: ${domain}, Attempt ${attemptCount} attempt)`)
               return { email: data.email, token: data.token || data.email, password }
             }
           }
@@ -496,7 +496,7 @@ export async function createTempMail(
               usedDomains.add(domain)
               
               const password = Math.random().toString(36).slice(-8) + 'A1!'
-              log(`✓ 成功获取临时邮箱: ${data.email_addr} (域名: ${domain}, 第 ${attemptCount} 次尝试)`)
+              log(`✓ Successfully obtained temporary email: ${data.email_addr} (domain: ${domain}, Attempt ${attemptCount} attempt)`)
               return { email: data.email_addr, token: data.sid_token, password }
             }
           }
@@ -511,7 +511,7 @@ export async function createTempMail(
           })
           
           if (!domainsResp.ok) {
-            log(`mail.tm 获取域名失败，跳过`)
+            log(`mail.tm 获取domain失败，Skipping`)
             break
           }
           
@@ -519,7 +519,7 @@ export async function createTempMail(
           const domains = domainsData['hydra:member'] || []
           
           if (domains.length === 0) {
-            log(`mail.tm 无可用域名，跳过`)
+            log(`mail.tm 无可用domain，Skipping`)
             break
           }
           
@@ -551,13 +551,13 @@ export async function createTempMail(
           if (loginResp.ok) {
             const loginData = await loginResp.json() as { token: string }
             if (loginData.token) {
-              log(`✓ 成功获取临时邮箱: ${email}`)
+              log(`✓ Successfully obtained temporary email: ${email}`)
               return { email, token: loginData.token, password }
             }
           }
         }
       } catch (error) {
-        log(`${service.name} 第 ${attemptCount} 次申请失败: ${error}`)
+        log(`${service.name} Attempt ${attemptCount} 次申请失败: ${error}`)
       }
       
       if (attemptCount < service.maxAttempts) {
@@ -565,11 +565,11 @@ export async function createTempMail(
       }
     }
     
-    log(`✗ ${service.name} 尝试了 ${attemptCount} 次，获取的域名: ${Array.from(usedDomains).join(', ')}`)
-    log(`  继续尝试下一个服务...`)
+    log(`✗ ${service.name} 尝试了 ${attemptCount} 次，获取的domain: ${Array.from(usedDomains).join(', ')}`)
+    log(`  继续尝试下一个service...`)
   }
   
-  log('✗ 所有临时邮箱服务均失败')
+  log('✗ 所有临时Emailservice均失败')
   return null
 }
 
@@ -579,7 +579,7 @@ export async function getTempMailCode(
   log: LogCallback,
   timeout: number = 120
 ): Promise<string | null> {
-  log(`========== 开始等待邮箱 ${email} 收到 AWS 验证码 ==========`)
+  log(`========== Starting to wait for email ${email} to receive AWS verification code ==========`)
   
   const emailDomain = email.split('@')[1]?.toLowerCase() || ''
   const is215Im = emailDomain.includes('abrdns') || emailDomain.includes('yyds.dev')
@@ -595,7 +595,7 @@ export async function getTempMailCode(
   else if (isTempMailPlus) serviceName = 'tempmail.plus'
   else if (isGuerrillaMail) serviceName = 'guerrillamail.com'
   
-  log(`[DEBUG] 邮箱域名: ${emailDomain}, 使用服务: ${serviceName}`)
+  log(`[DEBUG] Emaildomain: ${emailDomain}, 使用service: ${serviceName}`)
   
   const startTime = Date.now()
   const checkInterval = 3000
@@ -769,15 +769,15 @@ export async function getTempMailCode(
           continue
         }
         
-        log(`\n=== 收到新邮件 ===`)
-        log(`  发件人: ${sender}`)
-        log(`  主题: ${subject}`)
+        log(`\n=== Received new email ===`)
+        log(`  Sender: ${sender}`)
+        log(`  Subject: ${subject}`)
         
         const bodyText = htmlToText(msg.html || '') || msg.body || ''
         let code = extractCode(subject) || extractCode(bodyText) || extractCode(content)
         
         if (code) {
-          log(`\n========== 找到验证码: ${code} ==========`)
+          log(`\n========== Found verification code: ${code} ==========`)
           return code
         }
       }
@@ -788,7 +788,7 @@ export async function getTempMailCode(
     await new Promise(r => setTimeout(r, checkInterval))
   }
   
-  log('✗ 获取验证码超时')
+  log('✗ Verification code timeout')
   return null
 }
 
@@ -800,7 +800,7 @@ async function waitAndFill(
   description: string,
   timeout: number = 30000
 ): Promise<boolean> {
-  log(`等待${description}出现...`)
+  log(`Waiting for${description}to appear...`)
   try {
     const element = page.locator(selector).first()
     await element.waitFor({ state: 'visible', timeout })
@@ -822,10 +822,10 @@ async function waitAndFill(
       await randomDelay(50, 150)
     }
     
-    log(`✓ 已输入${description}: ${value}`)
+    log(`✓ Entered${description}: ${value}`)
     return true
   } catch (error) {
-    log(`✗ ${description}操作失败: ${error}`)
+    log(`✗ ${description}Operation failed: ${error}`)
     return false
   }
 }
@@ -843,13 +843,13 @@ async function tryClickSelectors(
       await element.waitFor({ state: 'visible', timeout: timeout / selectors.length })
       await page.waitForTimeout(300)
       await element.click()
-      log(`✓ 已点击${description}`)
+      log(`✓ Clicked${description}`)
       return true
     } catch {
       continue
     }
   }
-  log(`✗ 未找到${description}`)
+  log(`✗ Not found${description}`)
   return false
 }
 
@@ -897,7 +897,7 @@ async function checkAndRetryOnError(
           const text = await el.textContent()
           if (text && errorTexts.some(errText => text.includes(errText))) {
             hasError = true
-            log(`⚠ 检测到错误弹窗: "${text.substring(0, 80)}..."`)
+            log(`⚠ Detected error popup: "${text.substring(0, 80)}..."`)
             break
           }
         }
@@ -912,14 +912,14 @@ async function checkAndRetryOnError(
     }
     
     if (retry < maxRetries - 1) {
-      log('尝试关闭错误弹窗...')
+      log('Trying to close error popup...')
       let closed = false
       for (const closeSelector of closeButtonSelectors) {
         try {
           const closeBtn = page.locator(closeSelector).first()
           if (await closeBtn.isVisible({ timeout: 2000 })) {
             await closeBtn.click()
-            log('✓ 已关闭错误弹窗')
+            log('✓ Error popup closed')
             closed = true
             break
           }
@@ -929,25 +929,25 @@ async function checkAndRetryOnError(
       }
       
       if (!closed) {
-        log('未找到关闭按钮，尝试按 Escape 键')
+        log('Close button not found, trying Escape key')
         await page.keyboard.press('Escape')
       }
       
-      log(`等待 ${retryDelay / 1000} 秒后重试点击${description} (${retry + 2}/${maxRetries})...`)
+      log(`Waiting for ${retryDelay / 1000} seconds before retry点击${description} (${retry + 2}/${maxRetries})...`)
       await page.waitForTimeout(retryDelay)
       
       try {
         const button = page.locator(buttonSelector).first()
         await button.waitFor({ state: 'visible', timeout: 5000 })
         await button.click()
-        log(`✓ 已重新点击${description}`)
+        log(`✓ Re-clicked${description}`)
       } catch (e) {
-        log(`✗ 重新点击${description}失败: ${e}`)
+        log(`✗ Re-click failed: ${e}`)
       }
     }
   }
   
-  log(`✗ ${description}多次重试后仍然失败`)
+  log(`✗ ${description}Still failed after multiple retries`)
   return false
 }
 
@@ -959,7 +959,7 @@ async function waitAndClickWithRetry(
   timeout: number = 30000,
   maxRetries: number = 3
 ): Promise<boolean> {
-  log(`等待${description}出现...`)
+  log(`Waiting for${description}to appear...`)
   try {
     const element = page.locator(selector).first()
     await element.waitFor({ state: 'visible', timeout })
@@ -973,12 +973,12 @@ async function waitAndClickWithRetry(
     
     await randomDelay(100, 300)
     await element.click()
-    log(`✓ 已点击${description}`)
+    log(`✓ Clicked${description}`)
     
     const success = await checkAndRetryOnError(page, selector, log, description, maxRetries)
     return success
   } catch (error) {
-    log(`✗ 点击${description}失败: ${error}`)
+    log(`✗ Click failed: ${error}`)
     return false
   }
 }
@@ -992,12 +992,12 @@ export async function activateOutlook(
   const activationUrl = 'https://go.microsoft.com/fwlink/p/?linkid=2125442'
   let browser: Browser | null = null
   
-  log('========== 开始激活 Outlook 邮箱 ==========')
-  log(`无痕模式: ${incognitoMode ? '已启用' : '已禁用'}`)
-  log(`邮箱: ${email}`)
+  log('========== 开始激活 Outlook Email ==========')
+  log(`Incognito mode: ${incognitoMode ? 'Enabled' : '已禁用'}`)
+  log(`Email: ${email}`)
   
   try {
-    log(`\n步骤1: 启动浏览器${incognitoMode ? '（无痕模式）' : ''}（后台运行），访问 Outlook 激活页面...`)
+    log(`\nStep1: Launch browser${incognitoMode ? '（Incognito mode）' : ''}（headless mode），访问 Outlook 激活页面...`)
     
     const launchOptions: any = {
       headless: true,
@@ -1025,11 +1025,11 @@ export async function activateOutlook(
     const page = await context.newPage()
     
     await page.goto(activationUrl, { waitUntil: 'networkidle', timeout: 60000 })
-    log(`✓ 页面加载完成${incognitoMode ? '（无痕模式）' : ''}`)
+    log(`✓ Page loaded${incognitoMode ? '（Incognito mode）' : ''}`)
     
     await simulatePreRegistrationBehavior(page, log)
     
-    log('\n步骤2: 输入邮箱...')
+    log('\nStep2: 输入Email...')
     const emailInputSelectors = [
       'input#i0116[type="email"]',
       'input[name="loginfmt"]',
@@ -1042,7 +1042,7 @@ export async function activateOutlook(
         const element = page.locator(selector).first()
         await element.waitFor({ state: 'visible', timeout: 10000 })
         await element.fill(email)
-        log(`✓ 已输入邮箱: ${email}`)
+        log(`✓ EnteredEmail: ${email}`)
         emailFilled = true
         break
       } catch {
@@ -1051,25 +1051,25 @@ export async function activateOutlook(
     }
     
     if (!emailFilled) {
-      throw new Error('未找到邮箱输入框')
+      throw new Error('Not foundEmail输入框')
     }
     
     await page.waitForTimeout(1000)
     
-    log('\n步骤3: 点击下一步按钮...')
+    log('\nStep3: 点击下一步按钮...')
     const firstNextSelectors = [
       'input#idSIButton9[type="submit"]',
       'input[type="submit"][value="下一步"]',
       'input[type="submit"][value="Next"]'
     ]
     
-    if (!await tryClickSelectors(page, firstNextSelectors, log, '第一个下一步按钮')) {
-      throw new Error('点击第一个下一步按钮失败')
+    if (!await tryClickSelectors(page, firstNextSelectors, log, 'Attempt一个下一步按钮')) {
+      throw new Error('Click failed')
     }
     
     await page.waitForTimeout(3000)
     
-    log('\n步骤4: 输入密码...')
+    log('\nStep4: 输入Password...')
     const passwordInputSelectors = [
       'input#passwordEntry[type="password"]',
       'input#i0118[type="password"]',
@@ -1083,7 +1083,7 @@ export async function activateOutlook(
         const element = page.locator(selector).first()
         await element.waitFor({ state: 'visible', timeout: 15000 })
         await element.fill(emailPassword)
-        log('✓ 已输入密码')
+        log('✓ EnteredPassword')
         passwordFilled = true
         break
       } catch {
@@ -1092,12 +1092,12 @@ export async function activateOutlook(
     }
     
     if (!passwordFilled) {
-      throw new Error('未找到密码输入框')
+      throw new Error('Not foundPassword输入框')
     }
     
     await page.waitForTimeout(1000)
     
-    log('\n步骤5: 点击登录按钮...')
+    log('\nStep5: 点击登录按钮...')
     const loginButtonSelectors = [
       'button[type="submit"][data-testid="primaryButton"]',
       'input#idSIButton9[type="submit"]',
@@ -1108,35 +1108,35 @@ export async function activateOutlook(
     ]
     
     if (!await tryClickSelectors(page, loginButtonSelectors, log, '登录按钮')) {
-      throw new Error('点击登录按钮失败')
+      throw new Error('Click failed')
     }
     
     await page.waitForTimeout(3000)
     
-    log('\n步骤6: 点击第一个"暂时跳过"链接...')
+    log('\nStep6: 点击Attempt一个"暂时Skipping"链接...')
     const skipSelector = 'a#iShowSkip'
     try {
       const skipElement = page.locator(skipSelector).first()
       await skipElement.waitFor({ state: 'visible', timeout: 30000 })
       await skipElement.click()
-      log('✓ 已点击第一个"暂时跳过"')
+      log('✓ ClickedAttempt一个"暂时Skipping"')
       await page.waitForTimeout(3000)
     } catch {
-      log('未找到第一个"暂时跳过"链接，可能已跳过此步骤')
+      log('Not foundAttempt一个"暂时Skipping"链接，可能已Skipping此Step')
     }
     
-    log('\n步骤7: 点击第二个"暂时跳过"链接...')
+    log('\nStep7: 点击Attempt二个"暂时Skipping"链接...')
     try {
       const skipElement = page.locator(skipSelector).first()
       await skipElement.waitFor({ state: 'visible', timeout: 15000 })
       await skipElement.click()
-      log('✓ 已点击第二个"暂时跳过"')
+      log('✓ ClickedAttempt二个"暂时Skipping"')
       await page.waitForTimeout(3000)
     } catch {
-      log('未找到第二个"暂时跳过"链接，可能已跳过此步骤')
+      log('Not foundAttempt二个"暂时Skipping"链接，可能已Skipping此Step')
     }
     
-    log('\n步骤8: 点击"取消"按钮（跳过密钥创建）...')
+    log('\nStep8: 点击"取消"按钮（Skipping密钥创建）...')
     const cancelButtonSelectors = [
       'button[data-testid="secondaryButton"]:has-text("取消")',
       'button[data-testid="secondaryButton"]:has-text("Cancel")',
@@ -1145,28 +1145,28 @@ export async function activateOutlook(
     ]
     
     if (!await tryClickSelectors(page, cancelButtonSelectors, log, '"取消"按钮', 15000)) {
-      log('未找到"取消"按钮，可能已跳过此步骤')
+      log('Not found"取消"按钮，可能已Skipping此Step')
     }
     
     await page.waitForTimeout(3000)
     
-    log('\n步骤9: 点击"是"按钮（保持登录状态）...')
+    log('\nStep9: 点击"Yes"按钮（保持登录状态）...')
     const yesButtonSelectors = [
-      'button[type="submit"][data-testid="primaryButton"]:has-text("是")',
       'button[type="submit"][data-testid="primaryButton"]:has-text("Yes")',
-      'input#idSIButton9[value="是"]',
+      'button[type="submit"][data-testid="primaryButton"]:has-text("Yes")',
       'input#idSIButton9[value="Yes"]',
-      'button:has-text("是")',
+      'input#idSIButton9[value="Yes"]',
+      'button:has-text("Yes")',
       'button:has-text("Yes")'
     ]
     
-    if (!await tryClickSelectors(page, yesButtonSelectors, log, '"是"按钮', 15000)) {
-      log('未找到"是"按钮，可能已跳过此步骤')
+    if (!await tryClickSelectors(page, yesButtonSelectors, log, '"Yes"按钮', 15000)) {
+      log('Not found"Yes"按钮，可能已Skipping此Step')
     }
     
     await page.waitForTimeout(5000)
     
-    log('\n步骤10: 等待 Outlook 邮箱加载完成...')
+    log('\nStep10: Waiting for Outlook Email加载完成...')
     const newMailSelectors = [
       'button[aria-label="New mail"]',
       'button:has-text("New mail")',
@@ -1180,7 +1180,7 @@ export async function activateOutlook(
       try {
         const element = page.locator(selector).first()
         await element.waitFor({ state: 'visible', timeout: 30000 })
-        log('✓ Outlook 邮箱激活成功！')
+        log('✓ Outlook Email激活成功！')
         outlookLoaded = true
         break
       } catch {
@@ -1191,7 +1191,7 @@ export async function activateOutlook(
     if (!outlookLoaded) {
       const currentUrl = page.url()
       if (currentUrl.toLowerCase().includes('outlook') || currentUrl.toLowerCase().includes('mail')) {
-        log('✓ 已进入 Outlook 邮箱页面，激活成功！')
+        log('✓ 已进入 Outlook Email页面，激活成功！')
         outlookLoaded = true
       }
     }
@@ -1201,11 +1201,11 @@ export async function activateOutlook(
     browser = null
     
     if (outlookLoaded) {
-      log('\n========== Outlook 邮箱激活完成 ==========')
+      log('\n========== Outlook Email激活完成 ==========')
       return { success: true }
     } else {
-      log('\n⚠ Outlook 邮箱激活可能未完成')
-      return { success: false, error: 'Outlook 邮箱激活可能未完成' }
+      log('\n⚠ Outlook Email激活可能未完成')
+      return { success: false, error: 'Outlook Email激活可能未完成' }
     }
     
   } catch (error) {
@@ -1236,26 +1236,26 @@ export async function autoRegisterAWS(
   if (useTempMail) {
     const tempResult = await createTempMail(log)
     if (!tempResult) {
-      return { success: false, error: '获取临时邮箱失败' }
+      return { success: false, error: '获取临时Email失败' }
     }
     email = tempResult.email
     emailPassword = tempResult.password
     tempMailToken = tempResult.token
-    log(`✓ 准备使用临时邮箱注册: ${email}`)
+    log(`✓ 准备使用临时Email注册: ${email}`)
   }
 
   if (!email) {
-    return { success: false, error: '未提供邮箱地址' }
+    return { success: false, error: '未提供Email地址' }
   }
 
   const password = emailPassword || 'admin123456aA!'
   const randomName = generateRandomName()
   let browser: Browser | null = null
   
-  log('========== 开始自动注册 AWS Builder ID ==========')
-  log(`无痕模式: ${incognitoMode ? '已启用' : '已禁用'}`)
+  log('========== Starting automatic AWS Builder ID registration ==========')
+  log(`Incognito mode: ${incognitoMode ? 'Enabled' : '已禁用'}`)
   if (!skipOutlookActivation && email.toLowerCase().includes('outlook') && emailPassword) {
-    log('检测到 Outlook 邮箱，先进行激活（不使用代理）...')
+    log('检测到 Outlook Email，先进行激活（不使用代理）...')
     const activationResult = await activateOutlook(email, emailPassword, log)
     if (!activationResult.success) {
       log(`⚠ Outlook 激活可能未完成: ${activationResult.error}`)
@@ -1266,18 +1266,18 @@ export async function autoRegisterAWS(
     await new Promise(r => setTimeout(r, 2000))
   }
   
-  log('========== 开始 AWS Builder ID 注册 ==========')
-  log(`邮箱: ${email}`)
-  log(`姓名: ${randomName}`)
-  log(`密码: ${password}`)
+  log('========== Starting AWS Builder ID registration ==========')
+  log(`Email: ${email}`)
+  log(`Name: ${randomName}`)
+  log(`Password: ${password}`)
   if (proxyUrl) {
     log(`代理: ${proxyUrl}`)
   }
-  log(`使用指纹: ${useFingerprint ? '是' : '否'}`)
+  log(`Using fingerprint: ${useFingerprint ? 'Yes' : 'No'}`)
   
   let profile: any = fingerprintProfile
   if (useFingerprint && !profile) {
-    log('\n[指纹] 生成新指纹配置...')
+    log('\n[指纹] Generating new fingerprint configuration...')
     const { FingerprintGenerator } = await import('./fingerprint/generator')
     const generator = new FingerprintGenerator()
     profile = generator.generate()
@@ -1288,7 +1288,7 @@ export async function autoRegisterAWS(
   }
   
   try {
-    log(`\n步骤1: 启动浏览器${incognitoMode ? '（无痕模式）' : ''}${useFingerprint ? '（应用指纹）' : ''}（后台运行），进入注册页面...`)
+    log(`\nStep1: Launch browser${incognitoMode ? '（Incognito mode）' : ''}${useFingerprint ? '（应用指纹）' : ''}（headless mode），navigate to registration page...`)
     
     const launchOptions: any = {
       headless: true,
@@ -1331,35 +1331,35 @@ export async function autoRegisterAWS(
     const page = await context.newPage()
     
     if (useFingerprint && profile) {
-      log('[指纹] 注入高级指纹脚本...')
+      log('[指纹] Injecting advanced fingerprint script...')
       const { FingerprintInjector } = await import('./fingerprint/injector')
       const injector = new FingerprintInjector()
       const injectionCode = injector.generateInjectionCode(profile)
       
       await page.addInitScript(injectionCode)
-      log('[指纹] ✓ 指纹脚本已注入')
+      log('[指纹] ✓ Fingerprint script injected')
     }
     
     const registerUrl = verificationUri || 'https://view.awsapps.com/start/#/device?user_code=PQCF-FCCN'
-    log(`注册 URL: ${registerUrl}`)
+    log(`Registration URL: ${registerUrl}`)
     if (userCode) {
       log(`User Code: ${userCode}`)
     }
     await page.goto(registerUrl, { waitUntil: 'networkidle', timeout: 60000 })
-    log(`✓ 页面加载完成${incognitoMode ? '（无痕模式）' : ''}${useFingerprint ? '（指纹已应用）' : ''}`)
+    log(`✓ Page loaded${incognitoMode ? '（Incognito mode）' : ''}${useFingerprint ? '（fingerprint applied）' : ''}`)
     
     await simulatePreRegistrationBehavior(page, log)
     
     const emailInputSelector = 'input[placeholder="username@example.com"]'
-    if (!await waitAndFill(page, emailInputSelector, email, log, '邮箱输入框')) {
-      throw new Error('未找到邮箱输入框')
+    if (!await waitAndFill(page, emailInputSelector, email, log, 'Email输入框')) {
+      throw new Error('Not foundEmail输入框')
     }
     
     await page.waitForTimeout(1000)
     
     const firstContinueSelector = 'button[data-testid="test-primary-button"]'
-    if (!await waitAndClickWithRetry(page, firstContinueSelector, log, '第一个继续按钮')) {
-      throw new Error('点击第一个继续按钮失败')
+    if (!await waitAndClickWithRetry(page, firstContinueSelector, log, 'Attempt一个继续按钮')) {
+      throw new Error('Click failed')
     }
     
     await page.waitForTimeout(3000)
@@ -1411,29 +1411,29 @@ export async function autoRegisterAWS(
     
     if (isLoginFlow) {
       if (isVerifyFlow) {
-        log('\n⚠ 检测到验证页面，邮箱已注册，直接进入验证码步骤...')
+        log('\n⚠ 检测到验证页面，Email已注册，直接进入验证码Step...')
       } else {
-        log('\n⚠ 检测到邮箱已注册，切换到登录流程...')
+        log('\n⚠ 检测到Email已注册，切换到登录流程...')
       }
       
       if (!isVerifyFlow) {
-        log('\n步骤2(登录): 输入密码...')
+        log('\nStep2(登录): 输入Password...')
         const loginPasswordSelector = 'input[placeholder="Enter password"]'
-        if (!await waitAndFill(page, loginPasswordSelector, password, log, '登录密码输入框')) {
-          throw new Error('未找到登录密码输入框')
+        if (!await waitAndFill(page, loginPasswordSelector, password, log, '登录Password输入框')) {
+          throw new Error('Not found登录Password输入框')
         }
         
         await page.waitForTimeout(1000)
         
         const loginContinueSelector = 'button[data-testid="test-primary-button"]'
         if (!await waitAndClickWithRetry(page, loginContinueSelector, log, '登录继续按钮')) {
-          throw new Error('点击登录继续按钮失败')
+          throw new Error('Click failed')
         }
         
         await page.waitForTimeout(3000)
       }
       
-      log('\n步骤3(登录): 获取并输入验证码...')
+      log('\nStep3(登录): 获取并输入验证码...')
       const loginCodeSelectors = [
         'input[placeholder="6-digit"]',
         'input[placeholder="6 位数"]',
@@ -1445,7 +1445,7 @@ export async function autoRegisterAWS(
         try {
           await page.locator(selector).first().waitFor({ state: 'visible', timeout: 10000 })
           loginCodeInput = selector
-          log('✓ 登录验证码输入框已出现')
+          log('✓ 登录验证码输入框已to appear')
           break
         } catch {
           continue
@@ -1453,7 +1453,7 @@ export async function autoRegisterAWS(
       }
       
       if (!loginCodeInput) {
-        throw new Error('未找到登录验证码输入框')
+        throw new Error('Not found登录验证码输入框')
       }
       
       await page.waitForTimeout(1000)
@@ -1479,40 +1479,40 @@ export async function autoRegisterAWS(
       
       const loginVerifySelector = 'button[data-testid="test-primary-button"]'
       if (!await waitAndClickWithRetry(page, loginVerifySelector, log, '登录验证码确认按钮')) {
-        throw new Error('点击登录验证码确认按钮失败')
+        throw new Error('Click failed')
       }
       
       await page.waitForTimeout(5000)
       
     } else {
-      log('\n步骤2: 输入姓名...')
-      if (!await waitAndFill(page, nameInputSelector, randomName, log, '姓名输入框')) {
-        throw new Error('未找到姓名输入框')
+      log('\nStep2: 输入Name...')
+      if (!await waitAndFill(page, nameInputSelector, randomName, log, 'Name输入框')) {
+        throw new Error('Not foundName输入框')
       }
       
       await page.waitForTimeout(1000)
       
       const secondContinueSelector = 'button[data-testid="signup-next-button"]'
-      if (!await waitAndClickWithRetry(page, secondContinueSelector, log, '第二个继续按钮')) {
-        throw new Error('点击第二个继续按钮失败')
+      if (!await waitAndClickWithRetry(page, secondContinueSelector, log, 'Attempt二个继续按钮')) {
+        throw new Error('Click failed')
       }
       
       await page.waitForTimeout(3000)
       
-      log('\n步骤3: 获取并输入验证码...')
+      log('\nStep3: 获取并输入验证码...')
       const codeInputSelectors = [
         'input[placeholder="6-digit"]',
         'input[placeholder="6 位数"]',
         'input[class*="awsui_input"][type="text"]'
       ]
       
-      log('等待验证码输入框出现...')
+      log('Waiting for验证码输入框to appear...')
       let codeInputSelector: string | null = null
       for (const selector of codeInputSelectors) {
         try {
           await page.locator(selector).first().waitFor({ state: 'visible', timeout: 30000 })
           codeInputSelector = selector
-          log(`✓ 验证码输入框已出现 (selector: ${selector})`)
+          log(`✓ 验证码输入框已to appear (selector: ${selector})`)
           break
         } catch {
           continue
@@ -1520,7 +1520,7 @@ export async function autoRegisterAWS(
       }
       
       if (!codeInputSelector) {
-        throw new Error('未找到验证码输入框')
+        throw new Error('未Found verification code输入框')
       }
       
       await page.waitForTimeout(1000)
@@ -1557,7 +1557,7 @@ export async function autoRegisterAWS(
           const cookieButton = page.locator(selector).first()
           if (await cookieButton.isVisible({ timeout: 2000 })) {
             await cookieButton.click()
-            log('✓ 已点击 Cookie Accept 按钮')
+            log('✓ Clicked Cookie Accept 按钮')
             await page.waitForTimeout(1000)
             break
           }
@@ -1565,19 +1565,19 @@ export async function autoRegisterAWS(
         }
       }
       
-      // ========== 验证码提交步骤的额外处理 ==========
-      // 这是唯一需要额外处理的步骤
-      log('\n[特殊处理] 验证码提交步骤 - 增加重试和验证...')
+      // ========== 验证码提交Step的额外处理 ==========
+      // 这Yes唯一需要额外处理的Step
+      log('\n[特殊处理] 验证码提交Step - 增加重试和验证...')
       
       const verifyButtonSelector = 'button[data-testid="email-verification-verify-button"]'
       const passwordInputSelector = 'input[placeholder="Enter password"]'
       
       // 点击 Continue 按钮
       if (!await waitAndClickWithRetry(page, verifyButtonSelector, log, 'Continue 按钮', 30000, 10)) {
-        throw new Error('点击 Continue 按钮失败')
+        throw new Error('Click failed')
       }
       
-      // 验证是否成功进入密码输入页面
+      // 验证YesNo成功进入Password输入页面
       await page.waitForTimeout(3000)
       let passwordPageAppeared = false
       const maxVerifyRetries = 15
@@ -1587,7 +1587,7 @@ export async function autoRegisterAWS(
           const passwordInput = page.locator(passwordInputSelector).first()
           const isVisible = await passwordInput.isVisible({ timeout: 5000 })
           if (isVisible) {
-            log(`✓ 密码输入页面已出现（第${retry + 1}次检查）`)
+            log(`✓ Password输入页面已to appear（Attempt${retry + 1}次检查）`)
             passwordPageAppeared = true
             break
           }
@@ -1599,31 +1599,31 @@ export async function autoRegisterAWS(
           const stillOnCodePage = await page.locator('input[placeholder="6-digit"]').first().isVisible({ timeout: 2000 }).catch(() => false)
           
           if (errorVisible || stillOnCodePage) {
-            log(`⚠ 检测到仍在验证码页面或有错误弹窗（第${retry + 1}/${maxVerifyRetries}次），等待后重试...`)
+            log(`⚠ 检测到仍在验证码页面或有错误弹窗（Attempt${retry + 1}/${maxVerifyRetries}次），Waiting for后重试...`)
             
             const closeBtn = page.locator('button[aria-label="关闭"], button[aria-label="Close"]').first()
             if (await closeBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
               await closeBtn.click()
-              log('✓ 已关闭错误弹窗')
+              log('✓ Error popup closed')
             }
             
             await page.waitForTimeout(5000)
             await waitAndClickWithRetry(page, verifyButtonSelector, log, 'Continue 按钮（重试）', 10000, 1)
             await page.waitForTimeout(8000)
           } else {
-            log(`等待密码输入框出现...（第${retry + 1}/${maxVerifyRetries}次）`)
+            log(`Waiting forPassword输入框to appear...（Attempt${retry + 1}/${maxVerifyRetries}次）`)
             await page.waitForTimeout(3000)
           }
         }
       }
       
       if (!passwordPageAppeared) {
-        log('✗ 多次重试后密码输入框仍未出现，可能卡在了验证码步骤')
-        throw new Error('验证码提交失败，无法进入密码输入步骤（可能被 AWS 反检测拦截）')
+        log('✗ 多次重试后Password输入框仍未to appear，可能卡在了验证码Step')
+        throw new Error('验证码提交失败，无法进入Password输入Step（可能被 AWS Anti-detection拦截）')
       }
       
-      // 步骤4: 等待密码输入框出现，输入密码
-      log('\n步骤4: 输入密码...')
+      // Step4: Waiting forPassword输入框to appear，输入Password
+      log('\nStep4: 输入Password...')
       
       const passwordInputSelectors = [
         'input[placeholder="Enter password"]',
@@ -1639,23 +1639,23 @@ export async function autoRegisterAWS(
         try {
           const element = page.locator(selector).first()
           await element.waitFor({ state: 'visible', timeout: 10000 })
-          log(`✓ 找到密码输入框: ${selector}`)
+          log(`✓ 找到Password输入框: ${selector}`)
           
           await page.waitForTimeout(500)
           await element.clear()
           await element.fill(password)
           
-          log('✓ 已输入密码')
+          log('✓ EnteredPassword')
           passwordFilled = true
           break
         } catch (e) {
-          log(`⚠ 选择器 ${selector} 操作失败: ${e}`)
+          log(`⚠ 选择器 ${selector} Operation failed: ${e}`)
           continue
         }
       }
       
       if (!passwordFilled) {
-        throw new Error('未找到密码输入框')
+        throw new Error('Not foundPassword输入框')
       }
       
       await page.waitForTimeout(500)
@@ -1674,13 +1674,13 @@ export async function autoRegisterAWS(
         try {
           const element = page.locator(selector).first()
           await element.waitFor({ state: 'visible', timeout: 10000 })
-          log(`✓ 找到确认密码输入框: ${selector}`)
+          log(`✓ 找到确认Password输入框: ${selector}`)
           
           await page.waitForTimeout(500)
           await element.clear()
           await element.fill(password)
           
-          log('✓ 已输入确认密码')
+          log('✓ Entered确认Password')
           confirmPasswordFilled = true
           break
         } catch {
@@ -1689,20 +1689,20 @@ export async function autoRegisterAWS(
       }
       
       if (!confirmPasswordFilled) {
-        throw new Error('未找到确认密码输入框')
+        throw new Error('Not found确认Password输入框')
       }
       
       await page.waitForTimeout(1000)
       
       const thirdContinueSelector = 'button[data-testid="test-primary-button"]'
-      if (!await waitAndClickWithRetry(page, thirdContinueSelector, log, '第三个继续按钮（Confirm）')) {
-        throw new Error('点击第三个继续按钮失败')
+      if (!await waitAndClickWithRetry(page, thirdContinueSelector, log, 'Attempt三个继续按钮（Confirm）')) {
+        throw new Error('Click failed')
       }
       
       await page.waitForTimeout(5000)
     }
     
-    log('\n步骤5: 等待授权请求页面（Authorization requested）...')
+    log('\nStep5: Waiting for授权请求页面（Authorization requested）...')
     const authConfirmSelectors = [
       'button:has-text("Confirm and continue")',
       'button:has-text("确认并继续")',
@@ -1717,7 +1717,7 @@ export async function autoRegisterAWS(
         await element.waitFor({ state: 'visible', timeout: 20000 })
         await page.waitForTimeout(1000)
         await element.click()
-        log('✓ 已点击 "Confirm and continue" 授权按钮')
+        log('✓ Clicked "Confirm and continue" 授权按钮')
         authConfirmed = true
         break
       } catch {
@@ -1726,12 +1726,12 @@ export async function autoRegisterAWS(
     }
     
     if (!authConfirmed) {
-      log('⚠ 未找到授权确认按钮，可能已自动授权或页面结构变化')
+      log('⚠ Not found授权确认按钮，可能已自动授权或页面结构变化')
     }
     
     await page.waitForTimeout(5000)
     
-    log('\n步骤6: 等待访问授权页面（Allow access）...')
+    log('\nStep6: Waiting for访问授权页面（Allow access）...')
     const allowAccessSelectors = [
       'button:has-text("Allow access")',
       'button:has-text("允许访问")',
@@ -1746,7 +1746,7 @@ export async function autoRegisterAWS(
         await element.waitFor({ state: 'visible', timeout: 20000 })
         await page.waitForTimeout(1000)
         await element.click()
-        log('✓ 已点击 "Allow access" 按钮')
+        log('✓ Clicked "Allow access" 按钮')
         accessAllowed = true
         break
       } catch {
@@ -1755,13 +1755,13 @@ export async function autoRegisterAWS(
     }
     
     if (!accessAllowed) {
-      log('⚠ 未找到 "Allow access" 按钮，可能已自动授权或页面结构变化')
+      log('⚠ Not found "Allow access" 按钮，可能已自动授权或页面结构变化')
     }
     
-    log('等待授权处理完成...')
+    log('Waiting for授权处理完成...')
     await page.waitForTimeout(10000)
     
-    log('\n步骤7: 等待授权完全完成...')
+    log('\nStep7: Waiting for授权完全完成...')
     
     const successIndicators = [
       'text=Authorization successful',
@@ -1805,7 +1805,7 @@ export async function autoRegisterAWS(
       const ssoCookie = cookies.find(c => c.name === 'x-amz-sso_authn')
       if (ssoCookie) {
         if (!ssoTokenFound) {
-          log(`✓ 检测到 SSO Cookie，继续等待授权完全完成...`)
+          log(`✓ 检测到 SSO Cookie，继续Waiting for授权完全完成...`)
           ssoTokenFound = true
         }
         waitAfterCookie++
@@ -1817,7 +1817,7 @@ export async function autoRegisterAWS(
         }
       }
       
-      log(`等待授权完成... (${i + 1}/90)${ssoTokenFound ? ` [Cookie 已获取 ${waitAfterCookie}s]` : ''}`)
+      log(`Waiting for授权完成... (${i + 1}/90)${ssoTokenFound ? ` [Cookie 已获取 ${waitAfterCookie}s]` : ''}`)
       await page.waitForTimeout(1000)
     }
     
@@ -1825,7 +1825,7 @@ export async function autoRegisterAWS(
       throw new Error('授权未完成或超时')
     }
     
-    log('\n步骤6: 获取 SSO Token...')
+    log('\nStep6: 获取 SSO Token...')
     let ssoToken: string | null = null
     const cookies = await context.cookies()
     const ssoCookie = cookies.find(c => c.name === 'x-amz-sso_authn')
@@ -1845,7 +1845,7 @@ export async function autoRegisterAWS(
     }
     
   } catch (error) {
-    log(`\n✗ 注册失败: ${error}`)
+    log(`\n✗ Registration failed: ${error}`)
     if (browser) {
       try {
         let page: Page | null = null

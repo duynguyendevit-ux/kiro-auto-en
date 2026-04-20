@@ -1,163 +1,163 @@
-# AWS Builder ID Account Tool
+# AWS Builder ID Account Automation Tool
 
-> AWS Builder ID 账号自动化管理工具，支持自动注册与账号切换
+> Automated AWS Builder ID account management tool with auto-registration and account switching
 
 [![Node.js Version](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen)](https://nodejs.org/)
 [![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 [![TypeScript](https://img.shields.io/badge/typescript-5.9-blue)](https://www.typescriptlang.org/)
 
-## 特性
+## Features
 
-### 自动注册
-- Playwright 自动化浏览器注册
-- 临时邮箱自动获取验证码
-- 浏览器指纹伪装
-- 支持批量注册
-- 反检测机制（行为模拟、输入延迟）
+### Auto Registration
+- Playwright browser automation for registration
+- Automatic verification code retrieval from temporary emails
+- Browser fingerprint spoofing
+- Batch registration support
+- Anti-detection mechanisms (behavior simulation, input delays)
 
-### 账号切换
-- 交互式菜单操作
-- 快速切换 Kiro IDE 账号
-- 机器码重置功能
-- 自动管理 Kiro 进程
+### Account Switching
+- Interactive menu interface
+- Quick Kiro IDE account switching
+- Machine ID reset functionality
+- Automatic Kiro process management
 
-## 快速开始
+## Quick Start
 
 ```bash
-# 克隆项目
+# Clone the project
 git clone https://github.com/AERT-7Y/kiro-auto.git
 cd kiro-auto
 
-# 安装依赖
+# Install dependencies
 npm install
 
-# 安装浏览器
+# Install browser
 npm run install-browser
 
-# 启动自动注册
+# Start auto registration
 npm run register -- --count 1
 
-# 或启动账号切换
+# Or start account switcher
 npm run switch
 ```
 
-## 环境要求
+## Requirements
 
-| 要求 | 版本 | 说明 |
-|------|------|------|
-| Node.js | >= 18.0.0 | JavaScript 运行时 |
-| npm | >= 9.x | 包管理器 |
+| Requirement | Version | Description |
+|-------------|---------|-------------|
+| Node.js | >= 18.0.0 | JavaScript runtime |
+| npm | >= 9.x | Package manager |
 
-## 使用方法
+## Usage
 
-### 自动注册
+### Auto Registration
 
 ```bash
-# 注册单个账号
+# Register single account
 npm run register -- --count 1
 
-# 非交互模式
+# Non-interactive mode
 npm run register -- --count 1 --non-interactive
 
-# 注册多个账号
+# Register multiple accounts
 npm run register -- --count 10
 
-# 指定并发数
+# Specify concurrency
 npm run register -- --count 10 --concurrency 3
 
-# 指定注册间隔
+# Specify registration interval
 npm run register -- --count 5 --delayMs 5000
 
-# 使用代理
+# Use proxy
 npm run register -- --count 5 --proxyUrl "http://127.0.0.1:7890"
 ```
 
-### 账号切换
+### Account Switching
 
 ```bash
 npm run switch
 ```
 
-交互菜单功能：
-- 切换账号
-- 重启 Kiro
-- 重置机器码
-- 查看状态
+Interactive menu features:
+- Switch accounts
+- Restart Kiro
+- Reset machine ID
+- View status
 
-## 命令行参数
+## Command Line Arguments
 
-| 参数 | 简写 | 默认值 | 说明 |
-|------|------|--------|------|
-| `--count` | `-n` | 1 | 注册账号数量 |
-| `--concurrency` | `-c` | 1 | 并发注册数 |
-| `--delayMs` | `-d` | 0 | 注册间隔（毫秒） |
-| `--proxyUrl` | `--proxy` | - | 代理服务器地址 |
-| `--non-interactive` | - | - | 非交互模式 |
-| `--no-fingerprint` | - | - | 禁用指纹伪装 |
-| `--no-incognito` | - | - | 禁用无痕模式 |
+| Argument | Short | Default | Description |
+|----------|-------|---------|-------------|
+| `--count` | `-n` | 1 | Number of accounts to register |
+| `--concurrency` | `-c` | 1 | Concurrent registrations |
+| `--delayMs` | `-d` | 0 | Registration interval (milliseconds) |
+| `--proxyUrl` | `--proxy` | - | Proxy server address |
+| `--non-interactive` | - | - | Non-interactive mode |
+| `--no-fingerprint` | - | - | Disable fingerprint spoofing |
+| `--no-incognito` | - | - | Disable incognito mode |
 
-## 项目结构
+## Project Structure
 
 ```
 kiro-auto/
 ├── lib/
-│   ├── auth.ts              # AWS OIDC 认证
-│   ├── register.ts          # 注册核心逻辑
-│   └── fingerprint/         # 浏览器指纹伪装
-│       ├── generator.ts     # 指纹生成器
-│       ├── injector.ts      # 指纹注入器
-│       └── types.ts         # 类型定义
+│   ├── auth.ts              # AWS OIDC authentication
+│   ├── register.ts          # Registration core logic
+│   └── fingerprint/         # Browser fingerprint spoofing
+│       ├── generator.ts     # Fingerprint generator
+│       ├── injector.ts      # Fingerprint injector
+│       └── types.ts         # Type definitions
 ├── scripts/
-│   ├── switch.ts            # 账号切换入口
-│   └── register.ts          # 自动注册入口
+│   ├── switch.ts            # Account switcher entry
+│   └── register.ts          # Auto registration entry
 ├── show/
-│   ├── builderid-template.json  # 账号模板
-│   └── results.json         # 注册结果
+│   ├── builderid-template.json  # Account template
+│   └── results.json         # Registration results
 ├── package.json
 └── README.md
 ```
 
-## 技术实现
+## Technical Implementation
 
-### 注册流程
-1. 向 AWS OIDC 申请设备码
-2. 获取临时邮箱
-3. 启动浏览器访问注册页面
-4. 自动填写邮箱、姓名
-5. 获取邮箱验证码并输入
-6. 设置密码
-7. 完成授权，获取 SSO Token
+### Registration Flow
+1. Request device code from AWS OIDC
+2. Obtain temporary email
+3. Launch browser and navigate to registration page
+4. Auto-fill email and name
+5. Retrieve and input email verification code
+6. Set password
+7. Complete authorization and obtain SSO Token
 
-### 反检测机制
-- 浏览器指纹伪装（Canvas、WebGL、Navigator 等）
-- 页面预热行为模拟
-- 输入延迟模拟
-- 鼠标轨迹模拟
+### Anti-Detection Mechanisms
+- Browser fingerprint spoofing (Canvas, WebGL, Navigator, etc.)
+- Page warm-up behavior simulation
+- Input delay simulation
+- Mouse trajectory simulation
 
-## 常见问题
+## FAQ
 
-**Q: 注册失败怎么办？**
-- 检查网络是否能访问 AWS 服务
-- 尝试增加任务间隔
-- 使用代理
+**Q: What if registration fails?**
+- Check if network can access AWS services
+- Try increasing task intervals
+- Use a proxy
 
-**Q: 机器码重置失败？**
-- 需要以管理员身份运行终端
+**Q: Machine ID reset failed?**
+- Run terminal as administrator
 
-**Q: 找不到 Kiro 安装路径？**
-- 默认路径：`C:\Users\<用户名>\AppData\Local\Programs\Kiro\Kiro.exe`
+**Q: Can't find Kiro installation path?**
+- Default path: `C:\Users\<username>\AppData\Local\Programs\Kiro\Kiro.exe`
 
-## 免责声明
+## Disclaimer
 
-1. 本工具仅供**学习研究**使用
-2. 请勿将其用于任何商业或非法目的
-3. 使用本工具产生的任何问题，由使用者自行承担
-4. 请遵守 AWS 服务条款和相关法律法规
+1. This tool is for **educational and research purposes only**
+2. Do not use it for any commercial or illegal purposes
+3. Users are solely responsible for any issues arising from using this tool
+4. Please comply with AWS Terms of Service and relevant laws and regulations
 
-## 许可证
+## License
 
 MIT License
 
 ---
 
-如果这个项目对你有帮助，欢迎 Star！
+If this project helps you, please give it a Star!
