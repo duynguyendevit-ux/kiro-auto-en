@@ -11,13 +11,32 @@ import type { LogCallback } from './register'
 import { 
   createTempMail, 
   getTempMailCode, 
-  generateRandomName,
-  generateFingerprintProfile,
-  injectFingerprint,
-  simulateHumanType,
-  simulateHumanClick,
-  randomDelay
+  generateRandomName
 } from './register'
+
+// Simple helper functions
+function randomDelay(min: number, max: number): Promise<void> {
+  const delay = Math.floor(Math.random() * (max - min + 1)) + min
+  return new Promise(resolve => setTimeout(resolve, delay))
+}
+
+async function typeText(page: Page, selector: string, text: string): Promise<void> {
+  const input = page.locator(selector).first()
+  await input.click()
+  await randomDelay(300, 800)
+  await input.fill(text)
+  await randomDelay(300, 800)
+}
+
+async function clickButton(page: Page, selector: string): Promise<boolean> {
+  try {
+    const button = page.locator(selector).first()
+    await button.click()
+    return true
+  } catch {
+    return false
+  }
+}
 
 /**
  * Simplified workflow registration
@@ -88,11 +107,8 @@ export async function registerWorkflow(options: {
     
     const page = await context.newPage()
     
-    // Apply fingerprint if enabled
-    if (useFingerprint) {
-      const profile = generateFingerprintProfile()
-      await injectFingerprint(page, profile, log)
-    }
+    // Skip fingerprint for now (simplified)
+    log('✓ Browser ready')
     
     // Step 2: Navigate to registration page
     const registerUrl = verificationUri || `https://view.awsapps.com/start/#/device?user_code=${userCode}`
@@ -119,7 +135,7 @@ export async function registerWorkflow(options: {
       try {
         const input = page.locator(selector).first()
         if (await input.isVisible({ timeout: 2000 })) {
-          await simulateHumanType(page, selector, email, log)
+          await typeText(page, selector, email)
           emailFilled = true
           log(`✓ Email filled: ${email}`)
           break
@@ -147,7 +163,7 @@ export async function registerWorkflow(options: {
       try {
         const input = page.locator(selector).first()
         if (await input.isVisible({ timeout: 2000 })) {
-          await simulateHumanType(page, selector, name, log)
+          await typeText(page, selector, name)
           nameFilled = true
           log(`✓ Name filled: ${name}`)
           break
@@ -172,7 +188,7 @@ export async function registerWorkflow(options: {
     let continueClicked = false
     for (const selector of continueSelectors) {
       try {
-        if (await simulateHumanClick(page, selector, log)) {
+        if (await clickButton(page, selector)) {
           continueClicked = true
           log(`✓ Continue button clicked`)
           break
@@ -233,7 +249,7 @@ export async function registerWorkflow(options: {
     
     for (const selector of verifySelectors) {
       try {
-        if (await simulateHumanClick(page, selector, log)) {
+        if (await clickButton(page, selector)) {
           log(`✓ Verify button clicked`)
           break
         }
@@ -280,7 +296,7 @@ export async function registerWorkflow(options: {
       try {
         const input = page.locator(selector).first()
         if (await input.isVisible({ timeout: 2000 })) {
-          await simulateHumanType(page, selector, password, log)
+          await typeText(page, selector, password)
           log(`✓ Confirm password filled`)
           break
         }
@@ -296,7 +312,7 @@ export async function registerWorkflow(options: {
     
     for (const selector of finalContinueSelectors) {
       try {
-        if (await simulateHumanClick(page, selector, log)) {
+        if (await clickButton(page, selector)) {
           log(`✓ Final continue clicked`)
           break
         }
