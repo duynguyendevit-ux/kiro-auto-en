@@ -1,6 +1,6 @@
 [
   {
     "success": false,
-    "error": "Not foundName input field"
+    "error": "无法获取verification code"
   }
 ]
