@@ -164,16 +164,16 @@ async function runRegistration(opts: CliOptions): Promise<{ ok: number; fail: nu
   }
 
   const funnyMessages = [
-    'Let's go!',
-    'Just do it!',
-    'Don't be afraid!',
-    'Go go go!',
-    'Don't hesitate!',
-    'Let's go!',
-    'Get it done!',
-    'Charge!',
-    'Go for it!',
-    'Let's go!Go go go!'
+    "Let's go!",
+    "Just do it!",
+    "Don't be afraid!",
+    "Go go go!",
+    "Don't hesitate!",
+    "Let's go!",
+    "Get it done!",
+    "Charge!",
+    "Go for it!",
+    "Let's go!Go go go!"
   ]
 
   const getRandomFunny = () => funnyMessages[Math.floor(Math.random() * funnyMessages.length)]
