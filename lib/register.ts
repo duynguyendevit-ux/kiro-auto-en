@@ -22,7 +22,7 @@ const AWS_SENDERS = [
 const FIRST_NAMES = ['James', 'Robert', 'John', 'Michael', 'David', 'William', 'Richard', 'Maria', 'Elizabeth', 'Jennifer', 'Linda', 'Barbara', 'Susan', 'Jessica']
 const LAST_NAMES = ['Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis', 'Rodriguez', 'Martinez', 'Wilson', 'Anderson', 'Thomas', 'Taylor']
 
-function generateRandomName(): string {
+export function generateRandomName(): string {
   const first = FIRST_NAMES[Math.floor(Math.random() * FIRST_NAMES.length)]
   const last = LAST_NAMES[Math.floor(Math.random() * LAST_NAMES.length)]
   return `${first} ${last}`

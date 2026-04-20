@@ -1,6 +1,6 @@
 [
   {
     "success": false,
-    "error": "The requested module './register' does not provide an export named 'generateFingerprintProfile'"
+    "error": "The requested module './register' does not provide an export named 'generateRandomName'"
   }
 ]
