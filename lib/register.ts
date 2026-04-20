@@ -1452,21 +1452,8 @@ export async function autoRegisterAWS(
     if (!codeInputSelector) {
       throw new Error('Not found verification code input field')
     }
-        verifyCodeInput.waitFor({ state: 'visible', timeout: 10000 }).then(() => 'verify-input'),
-        nameInput.waitFor({ state: 'visible', timeout: 10000 }).then(() => 'register')
-      ])
-      
-      if (result === 'login') {
-        isLoginFlow = true
-      } else if (result === 'verify' || result === 'verify-input') {
-        isLoginFlow = true
-        isVerifyFlow = true
-      }
-    } catch {
-      try {
-        await page.locator(loginHeadingSelector).first().waitFor({ state: 'visible', timeout: 3000 })
-        isLoginFlow = true
-      } catch {
+    
+    // Get verification code from email
         try {
           const hasVerify = await page.locator(verifyHeadingSelector).first().isVisible().catch(() => false)
           const hasVerifyInput = await page.locator(verifyCodeInputSelector).first().isVisible().catch(() => false)
