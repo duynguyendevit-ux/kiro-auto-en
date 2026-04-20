@@ -3,7 +3,7 @@ import { chromium, Browser, Page } from 'playwright'
 type LogCallback = (message: string) => void
 
 const CODE_PATTERNS = [
-  /(?:verification\s*code|验证码|Your code is|code is)[：:\s]*(\d{6})/gi,
+  /(?:verification\s*code|verification code|Your code is|code is)[：:\s]*(\d{6})/gi,
   /(?:is|为)[：:\s]*(\d{6})\b/gi,
   /^\s*(\d{6})\s*$/gm,
   />\s*(\d{6})\s*</g,
@@ -557,7 +557,7 @@ export async function createTempMail(
           }
         }
       } catch (error) {
-        log(`${service.name} Attempt ${attemptCount} 次申请失败: ${error}`)
+        log(`${service.name} Attempt ${attemptCount} attempts failed: ${error}`)
       }
       
       if (attemptCount < service.maxAttempts) {
@@ -565,7 +565,7 @@ export async function createTempMail(
       }
     }
     
-    log(`✗ ${service.name} tried ${attemptCount} 次，obtained domains: ${Array.from(usedDomains).join(', ')}`)
+    log(`✗ ${service.name} tried ${attemptCount} attempts, obtained domains: ${Array.from(usedDomains).join(', ')}`)
     log(`  Trying next service...`)
   }
   
@@ -1051,7 +1051,7 @@ export async function activateOutlook(
     }
     
     if (!emailFilled) {
-      throw new Error('Not foundEmail输入框')
+      throw new Error('Not foundEmail input field')
     }
     
     await page.waitForTimeout(1000)
@@ -1092,7 +1092,7 @@ export async function activateOutlook(
     }
     
     if (!passwordFilled) {
-      throw new Error('Not foundPassword输入框')
+      throw new Error('Not foundPassword input field')
     }
     
     await page.waitForTimeout(1000)
@@ -1277,14 +1277,14 @@ export async function autoRegisterAWS(
   
   let profile: any = fingerprintProfile
   if (useFingerprint && !profile) {
-    log('\n[指纹] Generating new fingerprint configuration...')
+    log('\n[Fingerprint] Generating new fingerprint configuration...')
     const { FingerprintGenerator } = await import('./fingerprint/generator')
     const generator = new FingerprintGenerator()
     profile = generator.generate()
-    log(`[指纹] User Agent: ${profile.navigator.userAgent}`)
-    log(`[指纹] Platform: ${profile.navigator.platform}`)
-    log(`[指纹] Screen: ${profile.screen.width}x${profile.screen.height}`)
-    log(`[指纹] Hardware: ${profile.hardware.hardwareConcurrency} cores, ${profile.hardware.deviceMemory}GB RAM`)
+    log(`[Fingerprint] User Agent: ${profile.navigator.userAgent}`)
+    log(`[Fingerprint] Platform: ${profile.navigator.platform}`)
+    log(`[Fingerprint] Screen: ${profile.screen.width}x${profile.screen.height}`)
+    log(`[Fingerprint] Hardware: ${profile.hardware.hardwareConcurrency} cores, ${profile.hardware.deviceMemory}GB RAM`)
   }
   
   try {
@@ -1331,13 +1331,13 @@ export async function autoRegisterAWS(
     const page = await context.newPage()
     
     if (useFingerprint && profile) {
-      log('[指纹] Injecting advanced fingerprint script...')
+      log('[Fingerprint] Injecting advanced fingerprint script...')
       const { FingerprintInjector } = await import('./fingerprint/injector')
       const injector = new FingerprintInjector()
       const injectionCode = injector.generateInjectionCode(profile)
       
       await page.addInitScript(injectionCode)
-      log('[指纹] ✓ Fingerprint script injected')
+      log('[Fingerprint] ✓ Fingerprint script injected')
     }
     
     const registerUrl = verificationUri || 'https://view.awsapps.com/start/#/device?user_code=PQCF-FCCN'
@@ -1351,8 +1351,8 @@ export async function autoRegisterAWS(
     await simulatePreRegistrationBehavior(page, log)
     
     const emailInputSelector = 'input[placeholder="username@example.com"]'
-    if (!await waitAndFill(page, emailInputSelector, email, log, 'Email输入框')) {
-      throw new Error('Not foundEmail输入框')
+    if (!await waitAndFill(page, emailInputSelector, email, log, 'Email input field')) {
+      throw new Error('Not foundEmail input field')
     }
     
     await page.waitForTimeout(1000)
@@ -1411,7 +1411,7 @@ export async function autoRegisterAWS(
     
     if (isLoginFlow) {
       if (isVerifyFlow) {
-        log('\n⚠ 检测到验证页面，Email已注册，直接进入验证码Step...')
+        log('\n⚠ 检测到验证页面，Email已注册，直接进入verification codeStep...')
       } else {
         log('\n⚠ 检测到Email已注册，切换到login流程...')
       }
@@ -1419,8 +1419,8 @@ export async function autoRegisterAWS(
       if (!isVerifyFlow) {
         log('\nStep2(login): 输入Password...')
         const loginPasswordSelector = 'input[placeholder="Enter password"]'
-        if (!await waitAndFill(page, loginPasswordSelector, password, log, 'loginPassword输入框')) {
-          throw new Error('Not foundloginPassword输入框')
+        if (!await waitAndFill(page, loginPasswordSelector, password, log, 'loginPassword input field')) {
+          throw new Error('Not foundloginPassword input field')
         }
         
         await page.waitForTimeout(1000)
@@ -1445,7 +1445,7 @@ export async function autoRegisterAWS(
         try {
           await page.locator(selector).first().waitFor({ state: 'visible', timeout: 10000 })
           loginCodeInput = selector
-          log('✓ login验证码输入框已to appear')
+          log('✓ loginverification code input field已to appear')
           break
         } catch {
           continue
@@ -1453,7 +1453,7 @@ export async function autoRegisterAWS(
       }
       
       if (!loginCodeInput) {
-        throw new Error('Not foundlogin验证码输入框')
+        throw new Error('Not foundloginverification code input field')
       }
       
       await page.waitForTimeout(1000)
@@ -1468,17 +1468,17 @@ export async function autoRegisterAWS(
       }
       
       if (!loginVerificationCode) {
-        throw new Error('无法获取login验证码')
+        throw new Error('无法获取loginverification code')
       }
       
-      if (!await waitAndFill(page, loginCodeInput, loginVerificationCode, log, 'login验证码')) {
-        throw new Error('输入login验证码失败')
+      if (!await waitAndFill(page, loginCodeInput, loginVerificationCode, log, 'loginverification code')) {
+        throw new Error('输入loginverification code失败')
       }
       
       await page.waitForTimeout(1000)
       
       const loginVerifySelector = 'button[data-testid="test-primary-button"]'
-      if (!await waitAndClickWithRetry(page, loginVerifySelector, log, 'login验证码确认按钮')) {
+      if (!await waitAndClickWithRetry(page, loginVerifySelector, log, 'loginverification code确认按钮')) {
         throw new Error('Click failed')
       }
       
@@ -1486,8 +1486,8 @@ export async function autoRegisterAWS(
       
     } else {
       log('\nStep2: 输入Name...')
-      if (!await waitAndFill(page, nameInputSelector, randomName, log, 'Name输入框')) {
-        throw new Error('Not foundName输入框')
+      if (!await waitAndFill(page, nameInputSelector, randomName, log, 'Name input field')) {
+        throw new Error('Not foundName input field')
       }
       
       await page.waitForTimeout(1000)
@@ -1506,13 +1506,13 @@ export async function autoRegisterAWS(
         'input[class*="awsui_input"][type="text"]'
       ]
       
-      log('Waiting for验证码输入框to appear...')
+      log('Waiting forverification code input fieldto appear...')
       let codeInputSelector: string | null = null
       for (const selector of codeInputSelectors) {
         try {
           await page.locator(selector).first().waitFor({ state: 'visible', timeout: 30000 })
           codeInputSelector = selector
-          log(`✓ 验证码输入框已to appear (selector: ${selector})`)
+          log(`✓ verification code input field已to appear (selector: ${selector})`)
           break
         } catch {
           continue
@@ -1520,7 +1520,7 @@ export async function autoRegisterAWS(
       }
       
       if (!codeInputSelector) {
-        throw new Error('未Found verification code输入框')
+        throw new Error('未Found verification code input field')
       }
       
       await page.waitForTimeout(1000)
@@ -1535,11 +1535,11 @@ export async function autoRegisterAWS(
       }
       
       if (!verificationCode) {
-        throw new Error('无法获取验证码')
+        throw new Error('无法获取verification code')
       }
       
-      if (!await waitAndFill(page, codeInputSelector, verificationCode, log, '验证码')) {
-        throw new Error('输入验证码失败')
+      if (!await waitAndFill(page, codeInputSelector, verificationCode, log, 'verification code')) {
+        throw new Error('输入verification code失败')
       }
       
       await page.waitForTimeout(1000)
@@ -1565,9 +1565,9 @@ export async function autoRegisterAWS(
         }
       }
       
-      // ========== 验证码提交Step的额外处理 ==========
+      // ========== verification code提交Step的额外处理 ==========
       // 这Yes唯一需要额外处理的Step
-      log('\n[特殊处理] 验证码提交Step - 增加重试和验证...')
+      log('\n[特殊处理] verification code提交Step - 增加重试和验证...')
       
       const verifyButtonSelector = 'button[data-testid="email-verification-verify-button"]'
       const passwordInputSelector = 'input[placeholder="Enter password"]'
@@ -1599,7 +1599,7 @@ export async function autoRegisterAWS(
           const stillOnCodePage = await page.locator('input[placeholder="6-digit"]').first().isVisible({ timeout: 2000 }).catch(() => false)
           
           if (errorVisible || stillOnCodePage) {
-            log(`⚠ 检测到仍在验证码页面或有错误弹窗（Attempt${retry + 1}/${maxVerifyRetries}次），Waiting for后重试...`)
+            log(`⚠ 检测到仍在verification code页面或有错误弹窗（Attempt${retry + 1}/${maxVerifyRetries}次），Waiting for后重试...`)
             
             const closeBtn = page.locator('button[aria-label="关闭"], button[aria-label="Close"]').first()
             if (await closeBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
@@ -1611,18 +1611,18 @@ export async function autoRegisterAWS(
             await waitAndClickWithRetry(page, verifyButtonSelector, log, 'Continue 按钮（重试）', 10000, 1)
             await page.waitForTimeout(8000)
           } else {
-            log(`Waiting forPassword输入框to appear...（Attempt${retry + 1}/${maxVerifyRetries}次）`)
+            log(`Waiting forPassword input fieldto appear...（Attempt${retry + 1}/${maxVerifyRetries}次）`)
             await page.waitForTimeout(3000)
           }
         }
       }
       
       if (!passwordPageAppeared) {
-        log('✗ 多次重试后Password输入框仍未to appear，可能卡在了验证码Step')
-        throw new Error('验证码提交失败，无法进入Password输入Step（可能被 AWS Anti-detection拦截）')
+        log('✗ 多次重试后Password input field仍未to appear，可能卡在了verification codeStep')
+        throw new Error('verification code提交失败，无法进入Password输入Step（可能被 AWS Anti-detection拦截）')
       }
       
-      // Step4: Waiting forPassword输入框to appear，输入Password
+      // Step4: Waiting forPassword input fieldto appear，输入Password
       log('\nStep4: 输入Password...')
       
       const passwordInputSelectors = [
@@ -1639,7 +1639,7 @@ export async function autoRegisterAWS(
         try {
           const element = page.locator(selector).first()
           await element.waitFor({ state: 'visible', timeout: 10000 })
-          log(`✓ 找到Password输入框: ${selector}`)
+          log(`✓ 找到Password input field: ${selector}`)
           
           await page.waitForTimeout(500)
           await element.clear()
@@ -1655,7 +1655,7 @@ export async function autoRegisterAWS(
       }
       
       if (!passwordFilled) {
-        throw new Error('Not foundPassword输入框')
+        throw new Error('Not foundPassword input field')
       }
       
       await page.waitForTimeout(500)
@@ -1674,7 +1674,7 @@ export async function autoRegisterAWS(
         try {
           const element = page.locator(selector).first()
           await element.waitFor({ state: 'visible', timeout: 10000 })
-          log(`✓ 找到确认Password输入框: ${selector}`)
+          log(`✓ 找到确认Password input field: ${selector}`)
           
           await page.waitForTimeout(500)
           await element.clear()
@@ -1689,7 +1689,7 @@ export async function autoRegisterAWS(
       }
       
       if (!confirmPasswordFilled) {
-        throw new Error('Not found确认Password输入框')
+        throw new Error('Not found确认Password input field')
       }
       
       await page.waitForTimeout(1000)
