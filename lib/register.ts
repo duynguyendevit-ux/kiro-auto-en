@@ -1454,153 +1454,20 @@ export async function autoRegisterAWS(
     }
     
     // Get verification code from email
-        try {
-          const hasVerify = await page.locator(verifyHeadingSelector).first().isVisible().catch(() => false)
-          const hasVerifyInput = await page.locator(verifyCodeInputSelector).first().isVisible().catch(() => false)
-          if (hasVerify || hasVerifyInput) {
-            isLoginFlow = true
-            isVerifyFlow = true
-          }
-        } catch {
-          isLoginFlow = false
-        }
-      }
-    }
+    await page.waitForTimeout(1000)
     
-    if (isLoginFlow) {
-      if (isVerifyFlow) {
-        log('\n⚠ 检测到验证页面，Email已注册，直接进入verification codeStep...')
-      } else {
-        log('\n⚠ 检测到Email已注册，切换到login流程...')
-      }
-      
-      if (!isVerifyFlow) {
-        log('\nStep2(login): 输入Password...')
-        const loginPasswordSelector = 'input[placeholder="Enter password"]'
-        if (!await waitAndFill(page, loginPasswordSelector, password, log, 'loginPassword input field')) {
-          throw new Error('Not foundloginPassword input field')
-        }
-        
-        await page.waitForTimeout(1000)
-        
-        const loginContinueSelector = 'button[data-testid="test-primary-button"]'
-        if (!await waitAndClickWithRetry(page, loginContinueSelector, log, 'login继续按钮')) {
-          throw new Error('Click failed')
-        }
-        
-        await page.waitForTimeout(3000)
-      }
-      
-      log('\nStep3(login): Get and enter verification code...')
-      const loginCodeSelectors = [
-        'input[placeholder="6-digit"]',
-        'input[placeholder="6 位数"]',
-        'input[class*="awsui_input"][type="text"]'
-      ]
-      
-      let loginCodeInput: string | null = null
-      for (const selector of loginCodeSelectors) {
-        try {
-          await page.locator(selector).first().waitFor({ state: 'visible', timeout: 10000 })
-          loginCodeInput = selector
-          log('✓ loginverification code input field已to appear')
-          break
-        } catch {
-          continue
-        }
-      }
-      
-      if (!loginCodeInput) {
-        throw new Error('Not foundloginverification code input field')
-      }
-      
-      await page.waitForTimeout(1000)
-      
-      let loginVerificationCode: string | null = null
-      if (useTempMail) {
-        loginVerificationCode = await getTempMailCode(tempMailToken, email, log, 120)
-      } else if (refreshToken && clientId) {
-        loginVerificationCode = await getOutlookVerificationCode(refreshToken, clientId, log, 120)
-      } else {
-        log('Missing refresh_token or client_id, cannot auto-get verification code')
-      }
-      
-      if (!loginVerificationCode) {
-        throw new Error('无法获取loginverification code')
-      }
-      
-      if (!await waitAndFill(page, loginCodeInput, loginVerificationCode, log, 'loginverification code')) {
-        throw new Error('输入loginverification code失败')
-      }
-      
-      await page.waitForTimeout(1000)
-      
-      const loginVerifySelector = 'button[data-testid="test-primary-button"]'
-      if (!await waitAndClickWithRetry(page, loginVerifySelector, log, 'loginverification code确认按钮')) {
-        throw new Error('Click failed')
-      }
-      
-      await page.waitForTimeout(5000)
-      
-    } else if (!nameFilled) {
-      // Only enter name if not already filled in workflow format
-      log('\nStep2: Enter Name...')
-      if (!await waitAndFill(page, nameInputSelector, randomName, log, 'Name input field')) {
-        throw new Error('Not foundName input field')
-      }
-      
-      await page.waitForTimeout(1000)
-      
-      const secondContinueSelector = 'button[data-testid="signup-next-button"]'
-      if (!await waitAndClickWithRetry(page, secondContinueSelector, log, 'Second continue button')) {
-        throw new Error('Click failed')
-      }
-      
-      await page.waitForTimeout(3000)
+    let verificationCode: string | null = null
+    if (useTempMail) {
+      verificationCode = await getTempMailCode(tempMailToken, email, log, 120)
+    } else if (refreshToken && clientId) {
+      verificationCode = await getOutlookVerificationCode(refreshToken, clientId, log, 120)
     } else {
-      log('\nSkipping Step 2: Name already filled in workflow format')
-      await page.waitForTimeout(3000)
+      log('Missing refresh_token or client_id, cannot auto-get verification code')
     }
     
-    if (!isLoginFlow) {
-      log('\nStep3: Get and enter verification code...')
-      const codeInputSelectors = [
-        'input[placeholder="6-digit"]',
-        'input[placeholder="6 位数"]',
-        'input[class*="awsui_input"][type="text"]'
-      ]
-      
-      log('Waiting forverification code input fieldto appear...')
-      let codeInputSelector: string | null = null
-      for (const selector of codeInputSelectors) {
-        try {
-          await page.locator(selector).first().waitFor({ state: 'visible', timeout: 30000 })
-          codeInputSelector = selector
-          log(`✓ verification code input field已to appear (selector: ${selector})`)
-          break
-        } catch {
-          continue
-        }
-      }
-      
-      if (!codeInputSelector) {
-        throw new Error('未Found verification code input field')
-      }
-      
-      await page.waitForTimeout(1000)
-      
-      let verificationCode: string | null = null
-      if (useTempMail) {
-        verificationCode = await getTempMailCode(tempMailToken, email, log, 120)
-      } else if (refreshToken && clientId) {
-        verificationCode = await getOutlookVerificationCode(refreshToken, clientId, log, 120)
-      } else {
-        log('Missing refresh_token or client_id, cannot auto-get verification code')
-      }
-      
-      if (!verificationCode) {
-        throw new Error('无法获取verification code')
-      }
+    if (!verificationCode) {
+      throw new Error('Failed to get verification code')
+    }
       
       if (!await waitAndFill(page, codeInputSelector, verificationCode, log, 'verification code')) {
         throw new Error('输入verification code失败')
