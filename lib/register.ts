@@ -434,7 +434,7 @@ export async function createTempMail(
               
               const password = Math.random().toString(36).slice(-8) + 'A1!'
               log(`✓ Successfully obtained temporary email: ${data.address} (domain: ${domain}, Attempt ${attemptCount} attempt)`)
-              log(`  已尝试的domain: ${Array.from(usedDomains).join(', ')}`)
+              log(`  Tried domains: ${Array.from(usedDomains).join(', ')}`)
               return { email: data.address, token: data.token, password }
             }
           } else {
@@ -511,7 +511,7 @@ export async function createTempMail(
           })
           
           if (!domainsResp.ok) {
-            log(`mail.tm 获取domain失败，Skipping`)
+            log(`mail.tm Failed to get domains，Skipping`)
             break
           }
           
@@ -565,8 +565,8 @@ export async function createTempMail(
       }
     }
     
-    log(`✗ ${service.name} 尝试了 ${attemptCount} 次，获取的domain: ${Array.from(usedDomains).join(', ')}`)
-    log(`  继续尝试下一个service...`)
+    log(`✗ ${service.name} tried ${attemptCount} 次，obtained domains: ${Array.from(usedDomains).join(', ')}`)
+    log(`  Trying next service...`)
   }
   
   log('✗ 所有临时Emailservice均失败')
@@ -645,7 +645,7 @@ export async function getTempMailCode(
                   })
                 }
               } catch (e) {
-                log(`获取邮件 ${msg.id} 详情失败: ${e}`)
+                log(`Getting email ${msg.id} details failed: ${e}`)
               }
             }
           }
@@ -1097,17 +1097,17 @@ export async function activateOutlook(
     
     await page.waitForTimeout(1000)
     
-    log('\nStep5: 点击登录按钮...')
+    log('\nStep5: 点击login按钮...')
     const loginButtonSelectors = [
       'button[type="submit"][data-testid="primaryButton"]',
       'input#idSIButton9[type="submit"]',
       'button:has-text("下一步")',
-      'button:has-text("登录")',
+      'button:has-text("login")',
       'button:has-text("Sign in")',
       'button:has-text("Next")'
     ]
     
-    if (!await tryClickSelectors(page, loginButtonSelectors, log, '登录按钮')) {
+    if (!await tryClickSelectors(page, loginButtonSelectors, log, 'login按钮')) {
       throw new Error('Click failed')
     }
     
@@ -1150,7 +1150,7 @@ export async function activateOutlook(
     
     await page.waitForTimeout(3000)
     
-    log('\nStep9: 点击"Yes"按钮（保持登录状态）...')
+    log('\nStep9: 点击"Yes"按钮（保持login状态）...')
     const yesButtonSelectors = [
       'button[type="submit"][data-testid="primaryButton"]:has-text("Yes")',
       'button[type="submit"][data-testid="primaryButton"]:has-text("Yes")',
@@ -1236,12 +1236,12 @@ export async function autoRegisterAWS(
   if (useTempMail) {
     const tempResult = await createTempMail(log)
     if (!tempResult) {
-      return { success: false, error: '获取临时Email失败' }
+      return { success: false, error: 'Failed to get temporary email' }
     }
     email = tempResult.email
     emailPassword = tempResult.password
     tempMailToken = tempResult.token
-    log(`✓ 准备使用临时Email注册: ${email}`)
+    log(`✓ Ready to register with temporary email: ${email}`)
   }
 
   if (!email) {
@@ -1259,7 +1259,7 @@ export async function autoRegisterAWS(
     const activationResult = await activateOutlook(email, emailPassword, log)
     if (!activationResult.success) {
       log(`⚠ Outlook 激活可能未完成: ${activationResult.error}`)
-      log('继续尝试 AWS 注册...')
+      log('Continuing AWS registration...')
     } else {
       log('Outlook 激活成功，开始 AWS 注册...')
     }
@@ -1288,7 +1288,7 @@ export async function autoRegisterAWS(
   }
   
   try {
-    log(`\nStep1: Launch browser${incognitoMode ? '（Incognito mode）' : ''}${useFingerprint ? '（应用指纹）' : ''}（headless mode），navigate to registration page...`)
+    log(`\nStep1: Launch browser${incognitoMode ? '（Incognito mode）' : ''}${useFingerprint ? '（fingerprint applied）' : ''}（headless mode），navigate to registration page...`)
     
     const launchOptions: any = {
       headless: true,
@@ -1413,27 +1413,27 @@ export async function autoRegisterAWS(
       if (isVerifyFlow) {
         log('\n⚠ 检测到验证页面，Email已注册，直接进入验证码Step...')
       } else {
-        log('\n⚠ 检测到Email已注册，切换到登录流程...')
+        log('\n⚠ 检测到Email已注册，切换到login流程...')
       }
       
       if (!isVerifyFlow) {
-        log('\nStep2(登录): 输入Password...')
+        log('\nStep2(login): 输入Password...')
         const loginPasswordSelector = 'input[placeholder="Enter password"]'
-        if (!await waitAndFill(page, loginPasswordSelector, password, log, '登录Password输入框')) {
-          throw new Error('Not found登录Password输入框')
+        if (!await waitAndFill(page, loginPasswordSelector, password, log, 'loginPassword输入框')) {
+          throw new Error('Not foundloginPassword输入框')
         }
         
         await page.waitForTimeout(1000)
         
         const loginContinueSelector = 'button[data-testid="test-primary-button"]'
-        if (!await waitAndClickWithRetry(page, loginContinueSelector, log, '登录继续按钮')) {
+        if (!await waitAndClickWithRetry(page, loginContinueSelector, log, 'login继续按钮')) {
           throw new Error('Click failed')
         }
         
         await page.waitForTimeout(3000)
       }
       
-      log('\nStep3(登录): 获取并输入验证码...')
+      log('\nStep3(login): Get and enter verification code...')
       const loginCodeSelectors = [
         'input[placeholder="6-digit"]',
         'input[placeholder="6 位数"]',
@@ -1445,7 +1445,7 @@ export async function autoRegisterAWS(
         try {
           await page.locator(selector).first().waitFor({ state: 'visible', timeout: 10000 })
           loginCodeInput = selector
-          log('✓ 登录验证码输入框已to appear')
+          log('✓ login验证码输入框已to appear')
           break
         } catch {
           continue
@@ -1453,7 +1453,7 @@ export async function autoRegisterAWS(
       }
       
       if (!loginCodeInput) {
-        throw new Error('Not found登录验证码输入框')
+        throw new Error('Not foundlogin验证码输入框')
       }
       
       await page.waitForTimeout(1000)
@@ -1464,21 +1464,21 @@ export async function autoRegisterAWS(
       } else if (refreshToken && clientId) {
         loginVerificationCode = await getOutlookVerificationCode(refreshToken, clientId, log, 120)
       } else {
-        log('缺少 refresh_token 或 client_id，无法自动获取验证码')
+        log('Missing refresh_token or client_id, cannot auto-get verification code')
       }
       
       if (!loginVerificationCode) {
-        throw new Error('无法获取登录验证码')
+        throw new Error('无法获取login验证码')
       }
       
-      if (!await waitAndFill(page, loginCodeInput, loginVerificationCode, log, '登录验证码')) {
-        throw new Error('输入登录验证码失败')
+      if (!await waitAndFill(page, loginCodeInput, loginVerificationCode, log, 'login验证码')) {
+        throw new Error('输入login验证码失败')
       }
       
       await page.waitForTimeout(1000)
       
       const loginVerifySelector = 'button[data-testid="test-primary-button"]'
-      if (!await waitAndClickWithRetry(page, loginVerifySelector, log, '登录验证码确认按钮')) {
+      if (!await waitAndClickWithRetry(page, loginVerifySelector, log, 'login验证码确认按钮')) {
         throw new Error('Click failed')
       }
       
@@ -1499,7 +1499,7 @@ export async function autoRegisterAWS(
       
       await page.waitForTimeout(3000)
       
-      log('\nStep3: 获取并输入验证码...')
+      log('\nStep3: Get and enter verification code...')
       const codeInputSelectors = [
         'input[placeholder="6-digit"]',
         'input[placeholder="6 位数"]',
@@ -1531,7 +1531,7 @@ export async function autoRegisterAWS(
       } else if (refreshToken && clientId) {
         verificationCode = await getOutlookVerificationCode(refreshToken, clientId, log, 120)
       } else {
-        log('缺少 refresh_token 或 client_id，无法自动获取验证码')
+        log('Missing refresh_token or client_id, cannot auto-get verification code')
       }
       
       if (!verificationCode) {
@@ -1769,7 +1769,7 @@ export async function autoRegisterAWS(
       'text=You may now close this window',
       'text=您现在可以关闭此窗口',
       'text=You are now signed in',
-      'text=您现在已登录',
+      'text=您现在已login',
       '[data-testid="success-message"]',
       '.awsui-alert-success'
     ]

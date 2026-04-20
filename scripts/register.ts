@@ -163,22 +163,7 @@ async function runRegistration(opts: CliOptions): Promise<{ ok: number; fail: nu
     process.stdout.write(`${msg}\n`)
   }
 
-  const funnyMessages = [
-    "Let's go!",
-    "Just do it!",
-    "Don't be afraid!",
-    "Go go go!",
-    "Don't hesitate!",
-    "Let's go!",
-    "Get it done!",
-    "Charge!",
-    "Go for it!",
-    "Let's go!Go go go!"
-  ]
-
-  const getRandomFunny = () => funnyMessages[Math.floor(Math.random() * funnyMessages.length)]
-
-  logInfo(`🔥 Let's go!Preparing to create ${opts.count} accounts！concurrent ${opts.concurrency} 个！`)
+  logInfo(`🔥 Let's go!Preparing to create ${opts.count} accounts！concurrent ${opts.concurrency} !`)
   logInfo(`   (AWS: Are you serious???)\n`)
 
   const templateOutAbs = resolve(opts.templateOutputPath)
@@ -205,12 +190,11 @@ async function runRegistration(opts: CliOptions): Promise<{ ok: number; fail: nu
 
     const taskNum = idx + 1
     const log = (message: string) => {
-      const funny = getRandomFunny()
-      process.stdout.write(`[${funny}] 第${taskNum}号选手: ${message}\n`)
+      process.stdout.write(`[Task ${taskNum}] ${message}\n`)
     }
 
     try {
-      // Set proxy环境变量（让 fetch 请求也Using proxy）
+      // Set proxyenvironment variables（so fetch requests also use proxy）
       if (opts.proxyUrl) {
         process.env.HTTP_PROXY = opts.proxyUrl
         process.env.HTTPS_PROXY = opts.proxyUrl
@@ -312,7 +296,7 @@ async function runRegistration(opts: CliOptions): Promise<{ ok: number; fail: nu
     log('green', `🎉 Let's go!${ok} accountsAll succeeded！Time elapsed ${elapsedSec} seconds！`)
     log('cyan', `   AWS: "This is too hard..."`)
   } else if (ok > 0) {
-    log('yellow', `😅 Not bad! Got ${ok} 个，failed ${fail} 个，Time elapsed ${elapsedSec} seconds`)
+    log('yellow', `😅 Not bad! Got ${ok} accounts，failed ${fail} accounts，Time elapsed ${elapsedSec} seconds`)
     log('dim', `   (failed的那些...Try again next time！)`)
   } else {
     log('red', `💀 Total failure! None succeeded！Time elapsed ${elapsedSec} seconds`)
@@ -373,8 +357,8 @@ async function interactiveMode(initialOptions: Partial<CliOptions>): Promise<voi
 
     print('')
     log('dim', '┌─ ⚙️ Current Configuration ───────────────────────────────')
-    log('dim', `│ How many to create: ${currentOptions.count} 个`)
-    log('dim', `│ Concurrent: ${currentOptions.concurrency} 个`)
+    log('dim', `│ How many to create: ${currentOptions.count} accounts`)
+    log('dim', `│ Concurrent: ${currentOptions.concurrency} accounts`)
     log('dim', `│ Delay between each: ${currentOptions.delayMs}ms`)
     log('dim', `│ Incognito mode: ${currentOptions.incognitoMode ? '✅ Enabled' : '❌ Disabled'}`)
     log('dim', `│ Fingerprint spoofing: ${currentOptions.useFingerprint ? '✅ Spoofing' : '❌ Original'}`)
@@ -467,7 +451,7 @@ async function interactiveMode(initialOptions: Partial<CliOptions>): Promise<voi
           log('red', 'At least create 1, what did you enter?')
         } else if (val > 50) {
           currentOptions.count = val
-          log('yellow', `⚠️ Set to ${val} 个...Thats a lot, be careful of getting banned`)
+          log('yellow', `⚠️ Set to ${val} accounts...Thats a lot, be careful of getting banned`)
         } else {
           currentOptions.count = val
           log('green', `✓ 好的，Preparing to create ${val} accounts`)
@@ -479,10 +463,10 @@ async function interactiveMode(initialOptions: Partial<CliOptions>): Promise<voi
         const answer = await questionWithDefault('concurrent数', String(currentOptions.concurrency))
         const val = toInt(answer, currentOptions.concurrency)
         if (val < 1) {
-          log('red', 'concurrent数至少 1 个，别闹')
+          log('red', 'concurrent数至少 1 accounts，别闹')
         } else if (val > 5) {
           currentOptions.concurrency = val
-          log('yellow', `⚠️ concurrent ${val} 个...Can your computer handle it?`)
+          log('yellow', `⚠️ concurrent ${val} accounts...Can your computer handle it?`)
         } else {
           currentOptions.concurrency = val
           log('green', `✓ concurrent数设为 ${val}`)
