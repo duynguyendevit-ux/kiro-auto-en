@@ -1390,6 +1390,7 @@ export async function autoRegisterAWS(
     ]
     
     let nameFieldVisible = false
+    let nameFilled = false
     for (const selector of nameInputSelectors) {
       try {
         nameFieldVisible = await page.locator(selector).first().isVisible({ timeout: 2000 })
@@ -1399,6 +1400,7 @@ export async function autoRegisterAWS(
           const randomName = generateRandomName()
           if (await waitAndFill(page, selector, randomName, log, 'Name input field')) {
             log(`✓ Filled name: ${randomName}`)
+            nameFilled = true
             break
           }
         }
@@ -1548,8 +1550,9 @@ export async function autoRegisterAWS(
       
       await page.waitForTimeout(5000)
       
-    } else {
-      log('\nStep2: 输入Name...')
+    } else if (!nameFilled) {
+      // Only enter name if not already filled in workflow format
+      log('\nStep2: Enter Name...')
       if (!await waitAndFill(page, nameInputSelector, randomName, log, 'Name input field')) {
         throw new Error('Not foundName input field')
       }
@@ -1557,12 +1560,17 @@ export async function autoRegisterAWS(
       await page.waitForTimeout(1000)
       
       const secondContinueSelector = 'button[data-testid="signup-next-button"]'
-      if (!await waitAndClickWithRetry(page, secondContinueSelector, log, 'Attempt二个继续按钮')) {
+      if (!await waitAndClickWithRetry(page, secondContinueSelector, log, 'Second continue button')) {
         throw new Error('Click failed')
       }
       
       await page.waitForTimeout(3000)
-      
+    } else {
+      log('\nSkipping Step 2: Name already filled in workflow format')
+      await page.waitForTimeout(3000)
+    }
+    
+    if (!isLoginFlow) {
       log('\nStep3: Get and enter verification code...')
       const codeInputSelectors = [
         'input[placeholder="6-digit"]',
