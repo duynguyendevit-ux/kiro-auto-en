@@ -23,6 +23,7 @@ type CliOptions = {
   concurrency: number
   delayMs: number
   proxyUrl?: string
+  customEmail?: string
   incognitoMode: boolean
   useFingerprint: boolean
   outputPath: string
@@ -78,6 +79,9 @@ function parseArgs(argv: string[]): Partial<CliOptions> {
   }
   if (has('--proxyUrl') || has('--proxy')) {
     result.proxyUrl = get('--proxyUrl') ?? get('--proxy')
+  }
+  if (has('--email')) {
+    result.customEmail = get('--email')
   }
   if (has('--output')) {
     result.outputPath = get('--output')
@@ -225,6 +229,7 @@ async function runRegistration(opts: CliOptions): Promise<{ ok: number; fail: nu
       const result = await registerAwsBuilderIdTempMail({
         log,
         proxyUrl: opts.proxyUrl,
+        customEmail: opts.customEmail,
         incognitoMode: opts.incognitoMode,
         userCode: start.userCode,
         verificationUri: start.verificationUri,

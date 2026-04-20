@@ -1868,6 +1868,7 @@ export async function autoRegisterAWS(
 export type TempMailRegisterOptions = {
   log: LogCallback
   proxyUrl?: string
+  customEmail?: string
   incognitoMode?: boolean
   userCode?: string
   verificationUri?: string
@@ -1879,7 +1880,7 @@ export async function registerAwsBuilderIdTempMail(
   options: TempMailRegisterOptions
 ): Promise<{ success: boolean; ssoToken?: string; name?: string; error?: string; email?: string; password?: string }> {
   return await autoRegisterAWS(
-    undefined,
+    options.customEmail,
     undefined,
     undefined,
     options.log,

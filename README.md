@@ -59,6 +59,9 @@ npm run register -- --count 1
 # Non-interactive mode
 npm run register -- --count 1 --non-interactive
 
+# Register with custom email (your own email)
+npm run register -- --count 1 --email your@email.com
+
 # Register multiple accounts
 npm run register -- --count 10
 
@@ -70,6 +73,9 @@ npm run register -- --count 5 --delayMs 5000
 
 # Use proxy
 npm run register -- --count 5 --proxyUrl "http://127.0.0.1:7890"
+
+# Combine options
+npm run register -- --count 1 --email your@gmail.com --proxyUrl "http://127.0.0.1:7890"
 ```
 
 ### Account Switching
@@ -110,6 +116,7 @@ This will:
 | `--count` | `-n` | 1 | Number of accounts to register |
 | `--concurrency` | `-c` | 1 | Concurrent registrations |
 | `--delayMs` | `-d` | 0 | Registration interval (milliseconds) |
+| `--email` | - | - | Use custom email instead of temporary email |
 | `--proxyUrl` | `--proxy` | - | Proxy server address |
 | `--non-interactive` | - | - | Non-interactive mode |
 | `--no-fingerprint` | - | - | Disable fingerprint spoofing |
