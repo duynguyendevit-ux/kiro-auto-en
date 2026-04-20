@@ -1381,10 +1381,34 @@ export async function autoRegisterAWS(
     
     await page.waitForTimeout(1000)
     
-    // Try multiple continue button selectors
+    // Check if name field appears (workflow format)
+    const nameInputSelectors = [
+      'input[placeholder="Maria José Silva"]',
+      'input[name="name"]',
+      'input[autocomplete="name"]',
+      'input[type="text"]'
+    ]
+    
+    let nameFieldVisible = false
+    for (const selector of nameInputSelectors) {
+      try {
+        nameFieldVisible = await page.locator(selector).first().isVisible({ timeout: 2000 })
+        if (nameFieldVisible) {
+          log('Detected workflow format: name field visible after email')
+          // Fill name field
+          const randomName = generateRandomName()
+          if (await waitAndFill(page, selector, randomName, log, 'Name input field')) {
+            log(`✓ Filled name: ${randomName}`)
+            break
+          }
+        }
+      } catch {}
+    }
+    
+    // Now click Continue button
     const firstContinueSelectors = [
-      'button[data-testid="test-primary-button"]',
       'button[data-testid="signup-next-button"]',
+      'button[data-testid="test-primary-button"]',
       'button:has-text("Continue")',
       'button:has-text("Next")',
       'button[type="submit"]'
@@ -1392,7 +1416,7 @@ export async function autoRegisterAWS(
     
     let continueClicked = false
     for (const selector of firstContinueSelectors) {
-      if (await waitAndClickWithRetry(page, selector, log, 'First continue button')) {
+      if (await waitAndClickWithRetry(page, selector, log, 'Continue button')) {
         continueClicked = true
         break
       }
