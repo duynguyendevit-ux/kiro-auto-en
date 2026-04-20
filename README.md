@@ -23,22 +23,58 @@
 
 ## Quick Start
 
+### 1. Prerequisites
+
+Make sure you have Node.js installed:
 ```bash
-# Clone the project
-git clone https://github.com/AERT-7Y/kiro-auto.git
-cd kiro-auto
+node --version  # Should be >= 18.0.0
+```
+
+### 2. Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/duynguyendevit-ux/kiro-auto-en.git
+cd kiro-auto-en
 
 # Install dependencies
 npm install
 
-# Install browser
+# Install Chromium browser for automation
 npm run install-browser
+```
 
-# Start auto registration
+### 3. Basic Usage
+
+#### Option A: Use Temporary Email (Automatic)
+```bash
+# Register 1 account with temporary email
 npm run register -- --count 1
 
-# Or start account switcher
-npm run switch
+# The tool will:
+# 1. Create a temporary email automatically
+# 2. Fill in registration form
+# 3. Read verification code from email
+# 4. Complete registration
+```
+
+#### Option B: Use Your Own Email (Recommended)
+```bash
+# Register with your personal email
+npm run register -- --count 1 --email your@gmail.com
+
+# You will need to:
+# 1. Check your email for verification code
+# 2. Enter the code when prompted
+# 3. Tool will complete the rest
+```
+
+#### Option C: Read Verification Code from Email
+```bash
+# If you have a temporary email and need to read the code
+npm run read-mail -- user@tempmail.lol
+
+# This will poll the inbox and extract the 6-digit code
 ```
 
 ## Requirements
@@ -76,6 +112,42 @@ npm run register -- --count 5 --proxyUrl "http://127.0.0.1:7890"
 
 # Combine options
 npm run register -- --count 1 --email your@gmail.com --proxyUrl "http://127.0.0.1:7890"
+```
+
+### Advanced Usage
+
+#### Avoid Bot Detection (Recommended Settings)
+```bash
+# Slow mode with proxy
+npm run register -- \
+  --count 1 \
+  --email your@gmail.com \
+  --delayMs 10000 \
+  --proxyUrl "http://127.0.0.1:7890"
+
+# Very slow mode (safest)
+npm run register -- \
+  --count 1 \
+  --delayMs 15000 \
+  --concurrency 1
+```
+
+#### Using 215.im Email Service (Better Domain)
+```bash
+# Get API key from https://215.im
+export YYDS_MAIL_API_KEY="your_api_key"
+
+# Register with 215.im email
+npm run register -- --count 1 --delayMs 5000
+```
+
+#### Batch Registration
+```bash
+# Register 10 accounts, 3 at a time, 5 second delay
+npm run register -- \
+  --count 10 \
+  --concurrency 3 \
+  --delayMs 5000
 ```
 
 ### Account Switching
@@ -172,6 +244,73 @@ kiro-auto/
 
 **Q: Can't find Kiro installation path?**
 - Default path: `C:\Users\<username>\AppData\Local\Programs\Kiro\Kiro.exe`
+
+**Q: "Sorry, there was an error" popup appears?**
+- AWS detected bot behavior. Try:
+  - Use custom email instead of temp email: `--email your@gmail.com`
+  - Increase delays: `--delayMs 10000`
+  - Use proxy: `--proxyUrl "http://proxy:port"`
+  - Reduce concurrency: `--concurrency 1`
+
+**Q: Temporary email domain blocked?**
+- Use 215.im service with API key (better domains)
+- Or use your own email: `--email your@gmail.com`
+
+## Tips & Best Practices
+
+### 🎯 Maximize Success Rate
+
+1. **Use Custom Email** - Less likely to be blocked by AWS
+   ```bash
+   npm run register -- --count 1 --email your@gmail.com
+   ```
+
+2. **Add Delays** - Mimic human behavior
+   ```bash
+   npm run register -- --count 1 --delayMs 10000
+   ```
+
+3. **Use Proxy** - Change IP address
+   ```bash
+   npm run register -- --count 1 --proxyUrl "http://127.0.0.1:7890"
+   ```
+
+4. **Reduce Concurrency** - Don't overwhelm AWS
+   ```bash
+   npm run register -- --count 5 --concurrency 1
+   ```
+
+5. **Combine All** - Best setup
+   ```bash
+   npm run register -- \
+     --count 1 \
+     --email your@gmail.com \
+     --delayMs 10000 \
+     --proxyUrl "http://127.0.0.1:7890" \
+     --concurrency 1
+   ```
+
+### 📊 Understanding Output
+
+```
+[Let's go!] Attempt 1: Requesting device code from AWS...
+[Let's go!] Attempt 1: Got userCode: ABC123
+[Let's go!] Attempt 1: ✓ Successfully obtained temporary email: user@domain.com
+[Let's go!] Attempt 1: Step 1: Launch browser...
+[Let's go!] Attempt 1: Step 2: Enter name...
+[Let's go!] Attempt 1: ⚠ Detected error popup: "Sorry, there was an error..."
+[Let's go!] Attempt 1: ❌ Failed: Click failed
+```
+
+### 🔧 Troubleshooting
+
+| Issue | Solution |
+|-------|----------|
+| Bot detection | Use `--email`, increase `--delayMs`, add `--proxyUrl` |
+| Temp email blocked | Use 215.im API key or custom email |
+| Timeout | Increase timeout in code or retry |
+| Network error | Check internet connection, try proxy |
+| Browser crash | Reinstall browser: `npm run install-browser` |
 
 ## Disclaimer
 
