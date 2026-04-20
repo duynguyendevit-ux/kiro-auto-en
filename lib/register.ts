@@ -1956,19 +1956,23 @@ export type TempMailRegisterOptions = {
 export async function registerAwsBuilderIdTempMail(
   options: TempMailRegisterOptions
 ): Promise<{ success: boolean; ssoToken?: string; name?: string; error?: string; email?: string; password?: string }> {
-  return await autoRegisterAWS(
-    options.customEmail,
-    undefined,
-    undefined,
-    options.log,
-    undefined,
-    true,
-    options.proxyUrl,
-    options.incognitoMode ?? true,
-    true,
-    options.userCode,
-    options.verificationUri,
-    options.useFingerprint ?? true,
-    options.fingerprintProfile
-  )
+  // Use simplified workflow implementation
+  const { registerWorkflow } = await import('./workflow')
+  
+  const result = await registerWorkflow({
+    email: options.customEmail,
+    log: options.log,
+    proxyUrl: options.proxyUrl,
+    userCode: options.userCode,
+    verificationUri: options.verificationUri,
+    useFingerprint: options.useFingerprint ?? true,
+    incognitoMode: options.incognitoMode ?? true
+  })
+  
+  return {
+    success: result.success,
+    email: result.email,
+    password: result.password,
+    error: result.error
+  }
 }
