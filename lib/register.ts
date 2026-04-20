@@ -44,7 +44,7 @@ async function simulateMouseMove(page: Page, targetX: number, targetY: number): 
       const pointY = (1 - t) * (1 - t) * 0 + 2 * (1 - t) * t * controlY + t * t * targetY
       await page.mouse.move(Math.floor(pointX), Math.floor(pointY))
       if (Math.random() < 0.3) {
-        await randomDelay(10, 50)
+        await randomDelay(50, 150)
       }
     }
   } catch {}
@@ -65,7 +65,7 @@ async function simulateHumanClick(page: Page, selector: string, log: LogCallback
     const targetY = box.y + box.height / 2 + (Math.random() - 0.5) * 5
     
     await simulateMouseMove(page, targetX, targetY)
-    await randomDelay(100, 300)
+    await randomDelay(500, 1500)
     await element.click()
     return true
   } catch {
@@ -85,9 +85,9 @@ async function simulateHumanType(page: Page, selector: string, text: string, log
       await simulateMouseMove(page, targetX, targetY)
     }
     
-    await randomDelay(100, 200)
+    await randomDelay(300, 800)
     await element.click()
-    await randomDelay(100, 200)
+    await randomDelay(300, 800)
     await element.clear()
     
     for (const char of text) {
@@ -106,7 +106,7 @@ async function simulatePageScroll(page: Page): Promise<void> {
     await page.evaluate((amount) => {
       window.scrollBy(0, amount)
     }, scrollAmount * direction)
-    await randomDelay(200, 500)
+    await randomDelay(800, 2000)
   } catch {}
 }
 
@@ -126,7 +126,7 @@ async function simulatePreRegistrationBehavior(page: Page, log: LogCallback): Pr
       const x = Math.floor(Math.random() * viewport.width)
       const y = Math.floor(Math.random() * viewport.height)
       await simulateMouseMove(page, x, y)
-      await randomDelay(200, 500)
+      await randomDelay(800, 2000)
     }
   }
   
@@ -812,9 +812,9 @@ async function waitAndFill(
       await simulateMouseMove(page, targetX, targetY)
     }
     
-    await randomDelay(100, 300)
+    await randomDelay(500, 1500)
     await element.click()
-    await randomDelay(100, 200)
+    await randomDelay(300, 800)
     await element.clear()
     
     for (const char of value) {
@@ -971,7 +971,7 @@ async function waitAndClickWithRetry(
       await simulateMouseMove(page, targetX, targetY)
     }
     
-    await randomDelay(100, 300)
+    await randomDelay(500, 1500)
     await element.click()
     log(`✓ Clicked${description}`)
     
