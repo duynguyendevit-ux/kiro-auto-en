@@ -324,15 +324,7 @@ export async function createTempMail(
   log: LogCallback,
   timeout: number = 30
 ): Promise<{ email: string; token: string; password?: string } | null> {
-  const yydsMailApiKey = process.env.YYDS_MAIL_API_KEY || process.env.MALIAPI_215_API_KEY
   const services = [
-    {
-      name: '215.im (YYDS Mail)',
-      createUrl: 'https://maliapi.215.im/v1/accounts',
-      inboxUrl: (_token: string, email: string) => `https://maliapi.215.im/v1/messages?address=${email}`,
-      maxAttempts: 10,
-      preferredDomain: '0m0.abrdns.com'
-    },
     {
       name: 'tempmail.lol',
       createUrl: 'https://api.tempmail.lol/v2/inbox/create',

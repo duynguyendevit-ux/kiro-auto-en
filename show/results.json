@@ -1,6 +1,6 @@
 [
   {
     "success": false,
-    "error": "Email input field not found"
+    "error": "Failed to get verification code from email"
   }
 ]
