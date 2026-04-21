@@ -23,9 +23,9 @@ function randomDelay(min: number, max: number): Promise<void> {
 async function typeText(page: Page, selector: string, text: string): Promise<void> {
   const input = page.locator(selector).first()
   await input.click()
-  await randomDelay(300, 800)
+  await randomDelay(100, 300)
   await input.fill(text)
-  await randomDelay(300, 800)
+  await randomDelay(100, 300)
 }
 
 async function clickButton(page: Page, selector: string): Promise<boolean> {
@@ -116,7 +116,7 @@ export async function registerWorkflow(options: {
     await page.goto(registerUrl, { waitUntil: 'networkidle', timeout: 60000 })
     
     // Wait for potential redirect
-    await page.waitForTimeout(3000)
+    await page.waitForTimeout(1500)
     const currentUrl = page.url()
     log(`Current URL: ${currentUrl}`)
     log(`✓ Page loaded`)
@@ -125,7 +125,7 @@ export async function registerWorkflow(options: {
     log('\nStep 3: Filling email...')
     
     // Wait for page to be fully loaded
-    await page.waitForTimeout(2000)
+    await page.waitForTimeout(1000)
     
     const emailSelectors = [
       'input[placeholder="username@example.com"]',
@@ -209,7 +209,7 @@ export async function registerWorkflow(options: {
     
     // Step 6: Wait for verification code page
     log('\nStep 6: Waiting for verification code page...')
-    await page.waitForTimeout(3000)
+    await page.waitForTimeout(1500)
     
     const codeSelectors = [
       'input[placeholder="6-digit"]',
@@ -265,7 +265,7 @@ export async function registerWorkflow(options: {
     
     // Step 9: Wait for password page
     log('\nStep 9: Waiting for password page...')
-    await page.waitForTimeout(3000)
+    await page.waitForTimeout(1500)
     
     const passwordSelectors = [
       'input[placeholder*="password"]',
@@ -328,7 +328,7 @@ export async function registerWorkflow(options: {
     
     // Step 11: Wait for completion
     log('\nStep 11: Waiting for registration completion...')
-    await page.waitForTimeout(5000)
+    await page.waitForTimeout(2000)
     
     log('\n========== Registration Completed Successfully ==========')
     
