@@ -237,6 +237,19 @@ export async function registerWorkflow(options: {
     log(`[DEBUG] Token: ${tempMailToken ? 'Present' : 'Missing'}`)
     log(`[DEBUG] Timeout: 120 seconds`)
     
+    // Check if we should skip email polling (for testing)
+    const skipEmailPolling = process.env.SKIP_EMAIL_POLLING === 'true'
+    if (skipEmailPolling) {
+      log('[TEST MODE] Skipping email polling - AWS should have sent verification email')
+      log('[TEST MODE] Registration form accepted by AWS ✓')
+      log('[TEST MODE] You can manually check email and complete registration')
+      return {
+        success: true,
+        email,
+        password
+      }
+    }
+    
     const code = await getTempMailCode(tempMailToken, email, log, 120)
     
     if (!code) {
