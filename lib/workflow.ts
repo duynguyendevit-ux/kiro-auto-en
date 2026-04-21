@@ -233,9 +233,19 @@ export async function registerWorkflow(options: {
     
     // Step 7: Get verification code from email
     log('\nStep 7: Getting verification code from email...')
+    log(`[DEBUG] Email: ${email}`)
+    log(`[DEBUG] Token: ${tempMailToken ? 'Present' : 'Missing'}`)
+    log(`[DEBUG] Timeout: 120 seconds`)
+    
     const code = await getTempMailCode(tempMailToken, email, log, 120)
     
     if (!code) {
+      log('[DEBUG] No code received after timeout')
+      log('[DEBUG] Possible reasons:')
+      log('  1. AWS did not send email')
+      log('  2. Email went to spam')
+      log('  3. Temp email service blocked')
+      log('  4. Email domain blacklisted by AWS')
       throw new Error('Failed to get verification code from email')
     }
     

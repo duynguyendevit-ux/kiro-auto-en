@@ -594,6 +594,9 @@ export async function getTempMailCode(
   const seenIds = new Set<string>()
   
   while (Date.now() - startTime < timeout * 1000) {
+    const elapsed = Math.floor((Date.now() - startTime) / 1000)
+    log(`[DEBUG] Polling attempt (${elapsed}s / ${timeout}s)...`)
+    
     try {
       let messages: Array<{ from: string; subject: string; body?: string; html?: string; text?: string }> = []
       
@@ -727,6 +730,7 @@ export async function getTempMailCode(
           }
         }
       } else {
+        log(`[DEBUG] Fetching from tempmail.lol API...`)
         const url = `https://api.tempmail.lol/v2/inbox?token=${token}`
         const resp = await fetch(url, {
           headers: {
@@ -735,9 +739,14 @@ export async function getTempMailCode(
           }
         })
         
+        log(`[DEBUG] API response status: ${resp.status}`)
+        
         if (resp.ok) {
           const data = await resp.json() as { emails: Array<{ from: string; subject: string; body: string; html: string }> }
           messages = data.emails || []
+          log(`[DEBUG] Received ${messages.length} emails`)
+        } else {
+          log(`[DEBUG] API error: ${resp.statusText}`)
         }
       }
       
